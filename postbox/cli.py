@@ -3,12 +3,19 @@
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 import urllib.parse
 import urllib.request
 from urllib.error import URLError
 
-from postbox.models import CapturedRequest, CorruptInboxError
+from postbox import __version__
+from postbox.models import (
+    REDACTED,
+    SENSITIVE_HEADERS,
+    CapturedRequest,
+    CorruptInboxError,
+)
 from postbox.server import DEFAULT_MAX_BODY, serve
 from postbox.store import (
     AmbiguousIdError,
@@ -29,6 +36,16 @@ def _positive_int(value: str) -> int:
     return number
 
 
+def is_loopback(host: str) -> bool:
+    """Return True for loopback names and addresses only."""
+    if host.lower() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
+
+
 def _non_negative_float(value: str) -> float:
     try:
         number = float(value)
@@ -44,6 +61,9 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="postbox",
         description="A local webhook inbox with replay. Zero dependencies.",
     )
+    parser.add_argument(
+        "--version", action="version", version=f"postbox {__version__}"
+    )
     parser.add_argument("--file", default="inbox.jsonl", help="path to the JSONL inbox")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -51,6 +71,9 @@ def _build_parser() -> argparse.ArgumentParser:
     serve_parser = sub.add_parser("serve", help="listen for incoming requests")
     serve_parser.add_argument("--port", type=int, default=8787)
     serve_parser.add_argument("--host", default="127.0.0.1")
+    serve_parser.add_argument(
+        "--allow-public", action="store_true", help="allow binding a non-loopback address"
+    )
     serve_parser.add_argument(
         "--max-body", type=_positive_int, default=DEFAULT_MAX_BODY,
         help="reject bodies above N bytes",
@@ -107,6 +130,8 @@ def _replay(request: CapturedRequest, url: str, timeout: float) -> int:
             key: value
             for key, value in request.headers
             if key.lower() not in _HOP_BY_HOP
+            and key.lower() not in SENSITIVE_HEADERS
+            and value != REDACTED
         }
         target = urllib.request.Request(
             url, data=request.body, headers=headers, method=request.method
@@ -123,6 +148,13 @@ def _replay(request: CapturedRequest, url: str, timeout: float) -> int:
 
 def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
     if args.command == "serve":
+        if not is_loopback(args.host) and not args.allow_public:
+            print(f"Error: refusing to bind non-loopback address '{args.host}'.")
+            print("Why: the inbox has no authentication and captures may contain sensitive data.")
+            print("Fix: use --host 127.0.0.1, or pass --allow-public deliberately.")
+            return 2
+        if args.allow_public:
+            print("WARNING: this inbox has no authentication; anyone who can reach it can read captures.")
         print(f"Postbox listening on http://{args.host}:{args.port} (inbox: {args.file})")
         serve(args.port, store, args.host, args.max_body)
         return 0

@@ -1,11 +1,11 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-flake-413",
-    "last_phase": "phase 2",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1795037958.8160303,
+    "task_id": "postbox-secrets",
+    "last_phase": "phase 4",
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1795038366.236871,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
     "continuations": [],
@@ -14,16 +14,7 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ],
-    "impact_assessment": {
-      "why": "Strict delivery exposed an intermittent WinError 10053: the handler closed the socket before the client finished sending an oversized body.",
-      "benefits": "Deterministic 413 responses and a green strict gate across repeated runs.",
-      "risks": "contract: none, the 413 status is unchanged; dependency: none; concurrency: draining must stay bounded so a large body cannot pin a thread; state: no store change.",
-      "mitigation": "Read at most 16 MiB of the declared body before answering, and verify with three consecutive full-suite runs."
-    },
-    "completed_at": 1795037965.5278904,
-    "completed_head": "1ed01cad4758f250f4d44bbd29939412c40855c8",
-    "completed_tree": "a97febd17e51ec75cebf753fb45fec4fcbb03e34"
+    ]
   },
   "checkpoints": [
     {
@@ -314,6 +305,104 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "postbox-secrets",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/4] Secret hygiene: redact sensitive headers and query keys at capture, skip them on replay",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795038097.3608687,
+      "timestamp_str": "2026-11-19 00:41:37",
+      "agent": "opencode:postbox",
+      "impact_assessment": {
+        "why": "A probe showed Authorization, Cookie and token query values written verbatim into the inbox file, turning a local debugging tool into a plaintext secret store.",
+        "benefits": "Captured payloads stay useful for debugging while credentials are not persisted or replayed.",
+        "risks": "contract: redaction changes stored records and replay payloads, so ADR-005 and README must ship together; dependency: stdlib only; concurrency: redaction is pure and runs before the store lock; state: no format change, only field values.",
+        "mitigation": "Centralise redaction in a pure function with known-answer tests; filter redacted headers on replay; document the behaviour before commit; run the full gate."
+      },
+      "plan_digest": "3bc2e166ce7b506cba46460940e329f00e715df44f79df066414cfe5a18b9f95",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-secrets",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[1/4] Done: sensitive headers and query keys redacted at capture, redacted headers skipped on replay; 42 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795038198.6997168,
+      "timestamp_str": "2026-11-19 00:43:18",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-secrets",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[2/4] Done: loopback-only bind by default, --allow-public opt-in with warning; 44 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795038265.1756825,
+      "timestamp_str": "2026-11-19 00:44:25",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-secrets",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[3/4] Done: --version flag, ADR-005, README security and redaction contract; 45 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795038356.4309351,
+      "timestamp_str": "2026-11-19 00:45:56",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-secrets",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[4/4] Phase 4 passed: ADR-005 and README synced, codebase map regenerated, 4/4 gates green with 45 tests",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795038366.236871,
+      "timestamp_str": "2026-11-19 00:46:06",
+      "agent": "opencode:postbox",
+      "checklists": "passed",
+      "handoff": {
+        "state": "gates green, tree uncommitted",
+        "next": "commit locally, complete the task and run check --strict",
+        "evidence": "aikit.py check postbox --allow-dirty 4/4 PASS"
+      },
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
     }
   ]
 }

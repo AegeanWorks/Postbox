@@ -39,3 +39,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: The store lock is in-process. Two serve processes sharing one --file can interleave appends with an atomic trim and lose updates.
 - **Decision**: Keep the in-process lock and document a single-writer-per-file rule instead of adding cross-platform OS file locking.
 - **Consequences**: Users must run one inbox per file; avoids msvcrt/fcntl branches and stale-lock recovery, with the limit stated in the README and here.
+
+### ADR-005: Redact credentials at capture and refuse public binds
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed Authorization, Cookie and token values stored verbatim, and --host 0.0.0.0 was accepted despite an unauthenticated handler and a 'localhost only' claim.
+- **Decision**: Store sensitive headers and query values as [REDACTED], skip redacted headers on replay, bind to loopback by default, and require --allow-public for any other host.
+- **Consequences**: Debuggers keep method, path and non-sensitive headers; credentials are not persisted or replayed. Users who need a shared inbox must opt in explicitly and accept the lack of authentication.

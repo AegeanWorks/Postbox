@@ -6,7 +6,13 @@ import json
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from postbox.models import CapturedRequest, CorruptInboxError, utcnow
+from postbox.models import (
+    CapturedRequest,
+    CorruptInboxError,
+    redact_headers,
+    redact_query,
+    utcnow,
+)
 from postbox.store import InboxStore, UnsupportedFormatError
 
 DEFAULT_MAX_BODY = 1_048_576  # 1 MiB
@@ -69,8 +75,8 @@ class InboxHandler(BaseHTTPRequestHandler):
             id=uuid.uuid4().hex[:12],
             method=self.command,
             path=path,
-            query=query,
-            headers=tuple(self.headers.items()),
+            query=redact_query(query),
+            headers=redact_headers(tuple(self.headers.items())),
             body=body,
             received_at=utcnow(),
         )

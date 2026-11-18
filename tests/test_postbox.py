@@ -10,12 +10,18 @@ import tempfile
 import threading
 import unittest
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from unittest import mock
 
-from postbox.cli import main
-from postbox.models import CapturedRequest, CorruptInboxError
+from postbox.cli import is_loopback, main
+from postbox.models import (
+    CapturedRequest,
+    CorruptInboxError,
+    redact_headers,
+    redact_query,
+)
 from postbox.server import InboxServer
 from postbox.store import AmbiguousIdError, InboxStore, UnsupportedFormatError
 
@@ -25,14 +31,17 @@ def make_request(
     path: str = "/hook",
     body: bytes = b"",
     id: str = "abc123",
+    headers: tuple[tuple[str, str], ...] | None = None,
+    query: str = "",
 ) -> CapturedRequest:
     return CapturedRequest(
         id=id,
         method=method,
         path=path,
-        headers=(("Content-Type", "application/json"),),
+        headers=headers if headers is not None else (("Content-Type", "application/json"),),
         body=body,
         received_at="2026-11-19T00:00:00+00:00",
+        query=query,
     )
 
 
@@ -58,6 +67,28 @@ class ModelTests(unittest.TestCase):
     def test_missing_record_key_is_refused(self) -> None:
         with self.assertRaises(CorruptInboxError):
             CapturedRequest.from_dict({"id": "x"})
+
+    def test_sensitive_headers_are_redacted(self) -> None:
+        result = dict(
+            redact_headers(
+                (
+                    ("Authorization", "Bearer secret"),
+                    ("Content-Type", "application/json"),
+                    ("Cookie", "session=abc"),
+                    ("X-Api-Key", "abc123"),
+                )
+            )
+        )
+        self.assertEqual(result["Authorization"], "[REDACTED]")
+        self.assertEqual(result["Cookie"], "[REDACTED]")
+        self.assertEqual(result["X-Api-Key"], "[REDACTED]")
+        self.assertEqual(result["Content-Type"], "application/json")
+
+    def test_sensitive_query_keys_are_redacted(self) -> None:
+        result = dict(urllib.parse.parse_qsl(redact_query("a=1&token=s3cr3t&b=2")))
+        self.assertEqual(result["token"], "[REDACTED]")
+        self.assertEqual(result["a"], "1")
+        self.assertEqual(result["b"], "2")
 
 
 class StoreTests(unittest.TestCase):
@@ -276,6 +307,16 @@ class ServerTests(unittest.TestCase):
         self.assertIn(b"500", response)
         self.assertIn(b"inbox error", response.lower())
 
+    def test_secrets_are_redacted_on_capture(self) -> None:
+        response = self._raw(
+            b"POST /hook?token=s3cr3t HTTP/1.0\r\nHost: x\r\n"
+            b"Authorization: Bearer abc\r\nContent-Length: 2\r\n\r\nhi"
+        )
+        self.assertIn(b"200", response)
+        record = self.store.all()[0]
+        self.assertEqual(record.header("Authorization"), "[REDACTED]")
+        self.assertEqual(dict(urllib.parse.parse_qsl(record.query))["token"], "[REDACTED]")
+
     def test_oversized_body_is_rejected(self) -> None:
         request = urllib.request.Request(
             f"http://127.0.0.1:{self.port}/hook", data=b"x" * 128, method="POST"
@@ -329,6 +370,21 @@ class CliTests(unittest.TestCase):
         self.store.append(make_request(id="abc2"))
         self.assertEqual(main(["--file", str(self.path), "show", "abc"]), 1)
 
+    def test_version_flag(self) -> None:
+        self.assertEqual(main(["--version"]), 0)
+
+    def test_loopback_detection(self) -> None:
+        self.assertTrue(is_loopback("127.0.0.1"))
+        self.assertTrue(is_loopback("localhost"))
+        self.assertTrue(is_loopback("::1"))
+        self.assertFalse(is_loopback("0.0.0.0"))
+        self.assertFalse(is_loopback("192.168.1.5"))
+
+    def test_non_loopback_host_is_refused(self) -> None:
+        self.assertEqual(
+            main(["--file", str(self.path), "serve", "--host", "0.0.0.0"]), 2
+        )
+
     def test_invalid_numeric_flags_return_error(self) -> None:
         self.assertEqual(main(["--file", str(self.path), "serve", "--max", "0"]), 2)
         self.assertEqual(main(["--file", str(self.path), "list", "--limit", "-1"]), 2)
@@ -351,6 +407,33 @@ class CliTests(unittest.TestCase):
             )
             self.assertEqual(result, 0)
             self.assertEqual(target_store.all()[0].body, b"bye")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_replay_does_not_send_redacted_headers(self) -> None:
+        self.store.append(
+            make_request(
+                id="sec1",
+                headers=(("Authorization", "[REDACTED]"), ("Content-Type", "application/json")),
+                query="token=%5BREDACTED%5D",
+            )
+        )
+        target_store = InboxStore(Path(self.path).parent / "target-secrets.jsonl")
+        server = InboxServer(("127.0.0.1", 0), target_store)
+        port = server.server_address[1]
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            result = main(
+                ["--file", str(self.path), "replay", "sec1", "--url",
+                 f"http://127.0.0.1:{port}/target", "--timeout", "3"]
+            )
+            self.assertEqual(result, 0)
+            replayed = target_store.all()[0]
+            self.assertIsNone(replayed.header("Authorization"))
+            self.assertNotIn("s3cr3t", replayed.query)
         finally:
             server.shutdown()
             server.server_close()

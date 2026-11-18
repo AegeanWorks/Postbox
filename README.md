@@ -23,6 +23,7 @@ JSONL file.
 ## Cold-Start Quick Reference
 
 - **Runtime Prerequisites**: Python 3.10+ (standard library only); no network, no account.
+- **Version**: `postbox --version`
 
 **Canonical Regression Shield Gate**:
 ```
@@ -100,6 +101,18 @@ rewriting the file atomically.
 
 Only one `serve` process should write a given `--file`. The lock is in-process;
 two processes sharing a file can lose updates. Run one inbox per file.
+
+## Security
+
+The server binds to `127.0.0.1` by default and refuses non-loopback hosts unless
+`--allow-public` is passed deliberately; that option prints a warning because the
+inbox has no authentication.
+
+Captured `Authorization`, `Proxy-Authorization`, `Cookie`, `Set-Cookie`,
+`X-Api-Key` and `X-Auth-Token` headers are stored as `[REDACTED]`, as are query
+values for `token`, `api_key`, `apikey`, `secret`, `password` and `key`. Replay
+never sends a redacted header. This keeps credentials out of the JSONL file,
+but bodies are still stored verbatim — do not send secrets in request bodies.
 
 ## Replay
 

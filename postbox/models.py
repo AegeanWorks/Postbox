@@ -4,8 +4,47 @@ from __future__ import annotations
 
 import base64
 import binascii
+import urllib.parse
 from dataclasses import dataclass
 from datetime import datetime, timezone
+
+REDACTED = "[REDACTED]"
+
+SENSITIVE_HEADERS = frozenset(
+    {
+        "authorization",
+        "proxy-authorization",
+        "cookie",
+        "set-cookie",
+        "x-api-key",
+        "x-auth-token",
+    }
+)
+
+SENSITIVE_QUERY_KEYS = frozenset(
+    {"token", "api_key", "apikey", "secret", "password", "key"}
+)
+
+
+def redact_headers(
+    headers: tuple[tuple[str, str], ...] | list[tuple[str, str]]
+) -> tuple[tuple[str, str], ...]:
+    """Replace credential-bearing header values with a fixed marker."""
+    return tuple(
+        (name, REDACTED if name.lower() in SENSITIVE_HEADERS else value)
+        for name, value in headers
+    )
+
+
+def redact_query(query: str) -> str:
+    """Replace credential-bearing query values while preserving other keys."""
+    if not query:
+        return ""
+    pairs = urllib.parse.parse_qsl(query, keep_blank_values=True)
+    return urllib.parse.urlencode(
+        [(name, REDACTED if name.lower() in SENSITIVE_QUERY_KEYS else value)
+         for name, value in pairs]
+    )
 
 
 class CorruptInboxError(ValueError):

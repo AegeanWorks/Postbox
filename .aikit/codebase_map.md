@@ -8,9 +8,9 @@
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `6`
 - **Total Classes**: `11`
-- **Total Top-Level Functions**: `11`
-- **Total Class Methods**: `75`
-- **Total Source Lines**: `1041`
+- **Total Top-Level Functions**: `14`
+- **Total Class Methods**: `82`
+- **Total Source Lines**: `1201`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`6` module(s))
@@ -30,10 +30,11 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `199` lines
+**Size**: `231` lines
 
 **Functions:**
 - `def _positive_int(value)`
+- `def is_loopback(host)` - *Return True for loopback names and addresses only.*
 - `def _non_negative_float(value)`
 - `def _build_parser()`
 - `def _find_or_error(store, prefix)`
@@ -46,7 +47,7 @@
 ### [`postbox/models.py`](postbox/models.py)
 > *The captured-request value object.*
 
-**Size**: `107` lines
+**Size**: `146` lines
 
 **Classes:**
 - `class CorruptInboxError` - *A record in the inbox cannot be decoded safely.*
@@ -57,6 +58,8 @@
   - Method `.header(name)` - *Return the first header matching ``name`` case-insensitively.*
 
 **Functions:**
+- `def redact_headers(headers)` - *Replace credential-bearing header values with a fixed marker.*
+- `def redact_query(query)` - *Replace credential-bearing query values while preserving other keys.*
 - `def utcnow()` - *Return a stable, timezone-aware ISO-8601 timestamp.*
 
 ---
@@ -64,7 +67,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `162` lines
+**Size**: `168` lines
 
 **Classes:**
 - `class InboxHandler` - *Handler that captures requests and exposes a small inspection API.*
@@ -120,7 +123,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `367` lines
+**Size**: `450` lines
 
 **Classes:**
 - `class ModelTests`
@@ -129,6 +132,8 @@
   - Method `.test_header_lookup_is_case_insensitive()`
   - Method `.test_corrupt_base64_is_refused()`
   - Method `.test_missing_record_key_is_refused()`
+  - Method `.test_sensitive_headers_are_redacted()`
+  - Method `.test_sensitive_query_keys_are_redacted()`
 - `class StoreTests`
   - Method `.setUp()`
   - Method `.test_append_and_list()`
@@ -158,6 +163,7 @@
   - Method `.test_chunked_body_is_rejected()`
   - Method `.test_get_clear_is_a_noop()`
   - Method `.test_corrupt_inbox_returns_json_error()`
+  - Method `.test_secrets_are_redacted_on_capture()`
   - Method `.test_oversized_body_is_rejected()`
 - `class CliTests`
   - Method `.setUp()`
@@ -167,12 +173,16 @@
   - Method `.test_show_missing_returns_error()`
   - Method `.test_clear()`
   - Method `.test_ambiguous_prefix_returns_error()`
+  - Method `.test_version_flag()`
+  - Method `.test_loopback_detection()`
+  - Method `.test_non_loopback_host_is_refused()`
   - Method `.test_invalid_numeric_flags_return_error()`
   - Method `.test_bad_replay_url_returns_error()`
   - Method `.test_replay_sends_body_for_delete()`
+  - Method `.test_replay_does_not_send_redacted_headers()`
   - Method `.test_corrupt_inbox_gets_friendly_error()`
 
 **Functions:**
-- `def make_request(method, path, body, id)`
+- `def make_request(method, path, body, id, headers, query)`
 
 ---
