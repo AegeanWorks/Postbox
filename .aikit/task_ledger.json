@@ -1,11 +1,11 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-secrets",
+    "task_id": "postbox-ledger-tree",
     "last_phase": "phase 4",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1795038366.236871,
+    "updated_at": 1795038479.8272593,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
     "continuations": [],
@@ -15,45 +15,11 @@
         "path": "projects/postbox"
       }
     ],
-    "completed_at": 1795038408.2887409,
-    "completed_head": "0c6c4121ef4053d88a92d5c19440d02999408ca5",
-    "completed_tree": "8c8d5def7cf019d5390531a257977d3ec8a88c8e"
+    "completed_at": 1795038481.1017516,
+    "completed_head": "f178aab7b71d079aab1668dbfa6b37004f489a8b",
+    "completed_tree": "91a22bb37a8ff9727d263215fc9de624bdc4d5d8"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-hardening",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[2/4] Hardened core: versioned append-only JSONL with refuse-on-unknown and in-memory migration, fsynced appends, atomic clear, retention cap, bounded request bodies, concurrency-safe writes",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795036726.0822976,
-      "timestamp_str": "2026-11-19 00:18:46",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
-    {
-      "task_id": "postbox-hardening",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[3/4] Proper CLI: JSON output, method/path filters, limit, health endpoint, Why/Fix diagnostics, 21 failing-first tests covering versioning, migration, retention, concurrency, 413 and CLI",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795036731.9871967,
-      "timestamp_str": "2026-11-19 00:18:51",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-hardening",
       "phase": "phase 4",
@@ -393,6 +359,41 @@
       "timestamp_str": "2026-11-19 00:46:48",
       "agent": "opencode:postbox",
       "head": "0c6c4121ef4053d88a92d5c19440d02999408ca5",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
+    },
+    {
+      "task_id": "postbox-ledger-tree",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "Docs: list archived ledger in README tree after completion; 4/4 gates passed",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795038479.8272593,
+      "timestamp_str": "2026-11-19 00:47:59",
+      "agent": "opencode:postbox",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-ledger-tree",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-ledger-tree' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795038481.2178197,
+      "timestamp_str": "2026-11-19 00:48:01",
+      "agent": "opencode:postbox",
+      "head": "f178aab7b71d079aab1668dbfa6b37004f489a8b",
       "delivery": {
         "roots": [
           "."
