@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-hardening",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795036741.9003277,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,7 +14,10 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795036870.1231918,
+    "completed_head": "cd326accc92df2390a58b0ba9b72748a6a268938",
+    "completed_tree": "47c1e526882ae8355fed7c506f38e6363cc568a1"
   },
   "checkpoints": [
     {
@@ -97,6 +100,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-hardening",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-hardening' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795036870.2731192,
+      "timestamp_str": "2026-11-19 00:21:10",
+      "agent": "opencode:postbox",
+      "head": "cd326accc92df2390a58b0ba9b72748a6a268938",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
