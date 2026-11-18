@@ -36,11 +36,9 @@ class InboxHandler(BaseHTTPRequestHandler):
 
     def _inbox_error(self, exc: Exception) -> None:
         """Report a store failure as JSON instead of dropping the connection."""
-        self.close_connection = True
         self._send_json({"error": f"inbox error: {exc}"}, 500)
 
     def _bad_request(self, reason: str) -> None:
-        self.close_connection = True
         self._send_json({"error": reason}, 400)
 
     def _capture(self) -> None:
@@ -57,7 +55,9 @@ class InboxHandler(BaseHTTPRequestHandler):
             self._bad_request("chunked bodies are not supported; send Content-Length")
             return
         if length > self.max_body:
-            self.close_connection = True
+            # Drain a bounded amount so the client finishes its write before
+            # we answer; closing early aborts the client's send (WinError 10053).
+            self.rfile.read(min(length, 16 * 1024 * 1024))
             self._send_json(
                 {"error": "payload too large", "max_bytes": self.max_body}, 413
             )
@@ -93,7 +93,6 @@ class InboxHandler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/__clear":
             if self.command == "GET":
-                self.close_connection = True
                 self._send_json({"error": "use POST or DELETE to clear"}, 405)
             else:
                 self._clear()

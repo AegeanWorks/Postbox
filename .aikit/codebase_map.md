@@ -10,7 +10,7 @@
 - **Total Classes**: `11`
 - **Total Top-Level Functions**: `11`
 - **Total Class Methods**: `75`
-- **Total Source Lines**: `1042`
+- **Total Source Lines**: `1041`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`6` module(s))
@@ -64,7 +64,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `163` lines
+**Size**: `162` lines
 
 **Classes:**
 - `class InboxHandler` - *Handler that captures requests and exposes a small inspection API.*
