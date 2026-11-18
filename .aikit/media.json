@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "name": "postbox",
+  "repo": "Postbox",
+  "has_ui": false,
+  "ui_kind": "cli",
+  "palette": [
+    "#071112",
+    "#121e30",
+    "#66d8f5",
+    "#b18ef5"
+  ],
+  "motif": "pulse",
+  "layout": "center",
+  "assets": {
+    "logo": {
+      "path": "assets/logo.svg",
+      "status": "pending_review",
+      "commit": "",
+      "generated_at": "2026-11-19T00:12:47",
+      "review": null
+    },
+    "social_preview": {
+      "path": "assets/social-preview.svg",
+      "status": "pending_review",
+      "commit": "",
+      "generated_at": "2026-11-19T00:12:47",
+      "review": null
+    }
+  },
+  "screenshots": []
+}

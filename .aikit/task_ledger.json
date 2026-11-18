@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "active_task": {
+    "task_id": "postbox-hardening",
+    "last_phase": "phase 4",
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1795036741.9003277,
+    "owner": "opencode:postbox",
+    "started_by": "opencode:postbox",
+    "continuations": [],
+    "workspaces": [
+      {
+        "name": "postbox",
+        "path": "projects/postbox"
+      }
+    ]
+  },
+  "checkpoints": [
+    {
+      "task_id": "postbox-hardening",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/4] AIKit integration: attach project, seed .aikit memory, ledger plan and ADRs",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795036403.0658798,
+      "timestamp_str": "2026-11-19 00:13:23",
+      "agent": "opencode:postbox",
+      "impact_assessment": {
+        "why": "Postbox was created as an unattached scratch project; the user asked to make it AIKit-compatible and properly production-quality.",
+        "benefits": "Own git repo plus .aikit memory, gated delivery, explicit decisions, and a cold-start path for future work.",
+        "risks": "contract: persisted JSONL format must stay readable and versioned; dependency: stdlib only, no new packages; concurrency: threaded server appends must not interleave; state: append/clear atomicity and retention bounds must not lose captured requests.",
+        "mitigation": "Add a format version with refuse-on-unknown and a migration hook; lock every write; fsync each append; atomic os.replace for clear; failing-first tests per behaviour; run project check before any commit."
+      },
+      "plan_digest": "26d46fce86cefe3e71d15e3b16e58e4b2c3bb78d51ee8d1ed617303bc49c0b5c",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-hardening",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[2/4] Hardened core: versioned append-only JSONL with refuse-on-unknown and in-memory migration, fsynced appends, atomic clear, retention cap, bounded request bodies, concurrency-safe writes",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795036726.0822976,
+      "timestamp_str": "2026-11-19 00:18:46",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-hardening",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[3/4] Proper CLI: JSON output, method/path filters, limit, health endpoint, Why/Fix diagnostics, 21 failing-first tests covering versioning, migration, retention, concurrency, 413 and CLI",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795036731.9871967,
+      "timestamp_str": "2026-11-19 00:18:51",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-hardening",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[4/4] Phase 4 passed: codebase map regenerated, ADR-001/002 recorded, AL-1.1 license and topics set, cold-start README verified; 4/4 gates green (hygiene, guidelines, secrets, 21 tests)",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795036741.9003277,
+      "timestamp_str": "2026-11-19 00:19:01",
+      "agent": "opencode:postbox",
+      "checklists": "passed",
+      "handoff": {
+        "state": "all gates pass, tree uncommitted per PRINCIPLE-018 R1",
+        "next": "commit the untracked project files when the user authorizes, then run check --strict",
+        "evidence": "aikit.py check postbox --allow-dirty 4/4 PASS"
+      },
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    }
+  ]
+}
