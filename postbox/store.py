@@ -17,10 +17,30 @@ import threading
 from pathlib import Path
 from typing import Callable
 
-from postbox.models import CapturedRequest
+from postbox.models import CapturedRequest, CorruptInboxError
 
 FORMAT = "postbox-inbox"
 VERSION = 1
+
+
+def _fsync_dir(path: Path) -> None:
+    """Durably commit a directory entry where the platform allows it.
+
+    Windows refuses ``os.open`` on a directory, so a failure here is not an
+    error: the file itself is already fsynced and ``os.replace`` is atomic.
+    """
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    try:
+        descriptor = os.open(str(path), flags)
+    except OSError:
+        return
+    try:
+        os.fsync(descriptor)
+    # hygiene: allow directory fsync is unavailable on Windows; the file is already fsynced
+    except OSError:
+        pass
+    finally:
+        os.close(descriptor)
 
 # Migrations take the record lines of an older version and return record lines
 # understood by VERSION. They never rewrite the file on disk.
@@ -31,6 +51,17 @@ MIGRATIONS: dict[int, Callable[[list[str]], list[str]]] = {
 
 class UnsupportedFormatError(ValueError):
     """The inbox uses a format or version this loader cannot read."""
+
+
+class AmbiguousIdError(LookupError):
+    """A short id prefix matches more than one captured request."""
+
+    def __init__(self, prefix: str, matches: list[str]) -> None:
+        self.prefix = prefix
+        self.matches = matches
+        super().__init__(
+            f"prefix '{prefix}' matches {len(matches)} ids: {', '.join(matches)}"
+        )
 
 
 class InboxStore:
@@ -55,6 +86,7 @@ class InboxStore:
                 handle.write(self._header_line())
                 handle.flush()
                 os.fsync(handle.fileno())
+            _fsync_dir(self.path.parent)
 
     def _read_lines(self) -> list[str]:
         """Read and validate the file, returning its record lines."""
@@ -64,7 +96,12 @@ class InboxStore:
         if not lines:
             return []
 
-        first = json.loads(lines[0])
+        try:
+            first = json.loads(lines[0])
+        except json.JSONDecodeError as exc:
+            raise CorruptInboxError("inbox header is not valid JSON") from exc
+        if not isinstance(first, dict):
+            raise CorruptInboxError("inbox header is not a JSON object")
         if "format" not in first:
             migrate = MIGRATIONS.get(0)
             return migrate(lines) if migrate is not None else []
@@ -83,6 +120,18 @@ class InboxStore:
                 "the file was left untouched"
             )
         return migrate(lines[1:])
+
+    @staticmethod
+    def _decode(lines: list[str]) -> list[CapturedRequest]:
+        """Decode record lines, converting any parse failure to one error type."""
+        requests: list[CapturedRequest] = []
+        for line in lines:
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise CorruptInboxError("inbox record is not valid JSON") from exc
+            requests.append(CapturedRequest.from_dict(record))
+        return requests
 
     def _atomic_write(self, requests: list[CapturedRequest]) -> None:
         """Replace the file with a fresh header and exactly ``requests``."""
@@ -104,6 +153,7 @@ class InboxStore:
                 os.fsync(handle.fileno())
             os.replace(temp_path, self.path)
             temp_path = None
+            _fsync_dir(self.path.parent)
         finally:
             if temp_path is not None:
                 temp_path.unlink(missing_ok=True)
@@ -113,28 +163,30 @@ class InboxStore:
         line = json.dumps(request.to_dict(), ensure_ascii=False) + "\n"
         with self._lock:
             self._ensure_file()
+            # Parse before writing: a trim that cannot read the old file must
+            # not leave an orphan line behind.
+            records = self._decode(self._read_lines()) if self.max_requests else []
             with self.path.open("a", encoding="utf-8") as handle:
                 handle.write(line)
                 handle.flush()
                 os.fsync(handle.fileno())
             if self.max_requests is not None:
-                records = self._read_lines()
-                if len(records) > self.max_requests:
-                    kept = [CapturedRequest.from_dict(json.loads(item)) for item in records]
+                kept = records + [request]
+                if len(kept) > self.max_requests:
                     self._atomic_write(kept[-self.max_requests :])
 
     def all(self) -> list[CapturedRequest]:
         """Return every captured request in arrival order."""
         with self._lock:
             lines = self._read_lines()
-        return [CapturedRequest.from_dict(json.loads(line)) for line in lines]
+            return self._decode(lines)
 
     def find(self, prefix: str) -> CapturedRequest | None:
-        """Find a request whose id starts with ``prefix``."""
-        for request in self.all():
-            if request.id.startswith(prefix):
-                return request
-        return None
+        """Find a request by id prefix, refusing an ambiguous match."""
+        matches = [request for request in self.all() if request.id.startswith(prefix)]
+        if len(matches) > 1:
+            raise AmbiguousIdError(prefix, [request.id for request in matches])
+        return matches[0] if matches else None
 
     def clear(self) -> None:
         """Empty the inbox with a temp-file + os.replace atomic write."""

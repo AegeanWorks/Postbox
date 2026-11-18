@@ -30,6 +30,7 @@ python -m unittest discover -s tests
 ```
 
 - **Project gate from the workspace root**: `python aikit.py check postbox --allow-dirty`
+- **Install as a command**: `pip install .` then `postbox --help`
 - **Start the inbox**: `python -m postbox.cli serve --port 8787`
 - **List captures**: `python -m postbox.cli --file inbox.jsonl list`
 - **Inspect one**: `python -m postbox.cli --file inbox.jsonl show <id>`
@@ -50,6 +51,9 @@ postbox/
 │   ├── task_ledger.json      <- delivery ledger
 │   ├── media.json            <- reviewed brand media state
 │   └── codebase_map.md       <- generated AST symbol catalog
+├── .github/                  <- project-local CI
+│   └── workflows/            <- workflow definitions
+│       └── tests.yml         <- regression suite on push and PR
 ├── .gitignore                <- transient AIKit state excluded
 ├── assets/                   <- generated brand candidates (pending review)
 │   ├── logo.svg              <- project mark
@@ -59,6 +63,7 @@ postbox/
 ├── LICENSES/                 <- pinned license text for REUSE
 │   └── LicenseRef-AL-1.1.txt  <- AL-1.1 canonical text
 ├── REUSE.toml                <- REUSE aggregate license annotations
+├── pyproject.toml            <- package metadata and console script
 ├── postbox/                  <- package
 │   ├── __init__.py           <- version marker
 │   ├── models.py             <- immutable CapturedRequest and JSON/base64 codec
@@ -84,15 +89,24 @@ in memory.
 | any path, any method | capture the request and return `{"ok": true, "id": ...}` |
 | `GET /__inbox` | all captured requests as JSON |
 | `GET /__health` | readiness and current request count |
-| `GET /__clear` | empty the inbox |
+| `POST /__clear` or `DELETE /__clear` | empty the inbox |
 
-Bodies above `--max-body` bytes (default 1 MiB) get a `413` and are not stored.
-`serve --max N` keeps only the newest N requests by rewriting the file atomically.
+`GET /__clear` returns `405` so a prefetch cannot destroy captures. Bodies above
+`--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies
+are rejected with `400`; send a `Content-Length` instead. Malformed or negative
+`Content-Length` also gets `400`. A corrupt inbox produces a JSON `500` rather
+than a dropped connection. `serve --max N` keeps only the newest N requests by
+rewriting the file atomically.
+
+Only one `serve` process should write a given `--file`. The lock is in-process;
+two processes sharing a file can lose updates. Run one inbox per file.
 
 ## Replay
 
 Replay strips hop-by-hop headers (`host`, `content-length`, `connection`,
-`transfer-encoding`, `accept-encoding`) and uses the captured method and body.
+`transfer-encoding`, `accept-encoding`) and sends the captured body for every
+method, including GET and DELETE. Id prefixes that match more than one request
+are refused rather than silently resolving to the first match.
 It is a development tool: it binds to `127.0.0.1` by default, has no
 authentication, and is not meant to be exposed to the public internet.
 

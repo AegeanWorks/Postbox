@@ -4,14 +4,39 @@ from __future__ import annotations
 
 import argparse
 import json
+import urllib.parse
 import urllib.request
 from urllib.error import URLError
 
-from postbox.models import CapturedRequest
+from postbox.models import CapturedRequest, CorruptInboxError
 from postbox.server import DEFAULT_MAX_BODY, serve
-from postbox.store import InboxStore, UnsupportedFormatError
+from postbox.store import (
+    AmbiguousIdError,
+    InboxStore,
+    UnsupportedFormatError,
+)
 
 _HOP_BY_HOP = {"host", "content-length", "connection", "transfer-encoding", "accept-encoding"}
+
+
+def _positive_int(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be an integer") from exc
+    if number < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return number
+
+
+def _non_negative_float(value: str) -> float:
+    try:
+        number = float(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be a number") from exc
+    if number < 0:
+        raise argparse.ArgumentTypeError("must be non-negative")
+    return number
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -27,16 +52,19 @@ def _build_parser() -> argparse.ArgumentParser:
     serve_parser.add_argument("--port", type=int, default=8787)
     serve_parser.add_argument("--host", default="127.0.0.1")
     serve_parser.add_argument(
-        "--max-body", type=int, default=DEFAULT_MAX_BODY, help="reject bodies above N bytes"
+        "--max-body", type=_positive_int, default=DEFAULT_MAX_BODY,
+        help="reject bodies above N bytes",
     )
     serve_parser.add_argument(
-        "--max", type=int, default=None, help="keep only the newest N requests"
+        "--max", type=_positive_int, default=None, help="keep only the newest N requests"
     )
 
     list_parser = sub.add_parser("list", help="list captured request ids")
     list_parser.add_argument("--method", help="keep only this HTTP method")
     list_parser.add_argument("--path", help="keep only requests to this exact path")
-    list_parser.add_argument("--limit", type=int, default=None, help="show at most N results")
+    list_parser.add_argument(
+        "--limit", type=_positive_int, default=None, help="show at most N results"
+    )
 
     show_parser = sub.add_parser("show", help="show one captured request")
     show_parser.add_argument("id", help="full id or unique prefix")
@@ -46,13 +74,21 @@ def _build_parser() -> argparse.ArgumentParser:
     replay_parser = sub.add_parser("replay", help="send a captured request to a URL")
     replay_parser.add_argument("id", help="full id or unique prefix")
     replay_parser.add_argument("--url", required=True, help="target URL")
-    replay_parser.add_argument("--timeout", type=float, default=10.0, help="timeout in seconds")
+    replay_parser.add_argument(
+        "--timeout", type=_non_negative_float, default=10.0, help="timeout in seconds"
+    )
 
     return parser
 
 
 def _find_or_error(store: InboxStore, prefix: str) -> CapturedRequest | None:
-    request = store.find(prefix)
+    try:
+        request = store.find(prefix)
+    except AmbiguousIdError as exc:
+        print(f"Ambiguous id '{prefix}': {exc}")
+        print("Why: a short prefix can match several captured requests.")
+        print("Fix: use one of the listed full ids, or a longer unique prefix.")
+        return None
     if request is None:
         print(f"No captured request starts with '{prefix}'.")
         print("Why: replay needs a request that exists in this inbox.")
@@ -61,21 +97,27 @@ def _find_or_error(store: InboxStore, prefix: str) -> CapturedRequest | None:
 
 
 def _replay(request: CapturedRequest, url: str, timeout: float) -> int:
-    headers = {
-        key: value
-        for key, value in request.headers
-        if key.lower() not in _HOP_BY_HOP
-    }
-    data = request.body if request.method in {"POST", "PUT", "PATCH"} else None
-    target = urllib.request.Request(url, data=data, headers=headers, method=request.method)
     try:
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("URL must be an absolute http:// or https:// address")
+        if timeout < 0:
+            raise ValueError("timeout must be non-negative")
+        headers = {
+            key: value
+            for key, value in request.headers
+            if key.lower() not in _HOP_BY_HOP
+        }
+        target = urllib.request.Request(
+            url, data=request.body, headers=headers, method=request.method
+        )
         with urllib.request.urlopen(target, timeout=timeout) as response:
             print(f"{request.method} {url} -> {response.status}")
             return 0
-    except (URLError, OSError) as exc:
+    except (URLError, OSError, ValueError) as exc:
         print(f"Replay failed: {exc}")
-        print("Why: the target must be reachable and accept the captured method and body.")
-        print("Fix: check the URL, then retry with a longer --timeout if the target is slow.")
+        print("Why: the target must be a reachable http(s) URL that accepts this method and body.")
+        print("Fix: check --url, then retry with a longer --timeout if the target is slow.")
         return 1
 
 
@@ -131,18 +173,27 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     """Run the CLI and return an exit code."""
-    args = _build_parser().parse_args(argv)
-    max_requests = args.max if args.command == "serve" else None
-    store = InboxStore(args.file, max_requests=max_requests)
     try:
+        args = _build_parser().parse_args(argv)
+    except SystemExit as exc:
+        return int(exc.code or 0)
+
+    try:
+        max_requests = args.max if args.command == "serve" else None
+        store = InboxStore(args.file, max_requests=max_requests)
         return _dispatch(args, store)
     except UnsupportedFormatError as exc:
         print(f"Error: {exc}")
         print("Why: this loader refuses a format it cannot read, and leaves the file untouched.")
         print("Fix: point --file at a Postbox v1 inbox, or add a migration for that version.")
         return 1
-    except OSError as exc:
+    except CorruptInboxError as exc:
+        print(f"Error: corrupt inbox -- {exc}")
+        print("Why: a damaged record cannot be decoded without risking a wrong replay.")
+        print("Fix: clear the inbox, or restore it from a backup, then retry.")
+        return 1
+    except (OSError, ValueError) as exc:
         print(f"Error: {exc}")
-        print("Why: the inbox file or directory could not be read or written.")
-        print("Fix: check --file and its permissions, then retry.")
+        print("Why: the inbox file or one of its settings is invalid or inaccessible.")
+        print("Fix: check --file, its permissions and the numeric options, then retry.")
         return 1

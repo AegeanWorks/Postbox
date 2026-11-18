@@ -25,3 +25,17 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A webhook catcher accepts untrusted payloads from anything that can reach its port, and an unbounded inbox can exhaust disk during a flood.
 - **Decision**: Bind to 127.0.0.1 by default, reject bodies above a configurable limit with HTTP 413, and offer an optional newest-N retention cap applied by atomic replacement.
 - **Consequences**: Callers sending large payloads get an explicit 413 instead of a silent memory spike; enabling --max rewrites the file after a trim, which is atomic but costs one write per overflow.
+
+### ADR-003: Clear endpoint requires POST or DELETE
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: GET /__clear destroyed captures when a browser or prefetch followed the link, and GET is defined as safe and idempotent.
+- **Decision**: Clear is now POST /__clear or DELETE /__clear; GET /__clear returns 405 without mutating state.
+- **Consequences**: Existing callers using GET must switch methods; captures are no longer lost to prefetch, and the endpoint contract is documented in the README.
+
+### ADR-004: Single-writer persistence model
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: The store lock is in-process. Two serve processes sharing one --file can interleave appends with an atomic trim and lose updates.
+- **Decision**: Keep the in-process lock and document a single-writer-per-file rule instead of adding cross-platform OS file locking.
+- **Consequences**: Users must run one inbox per file; avoids msvcrt/fcntl branches and stale-lock recovery, with the limit stated in the README and here.

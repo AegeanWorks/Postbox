@@ -1,11 +1,11 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-hardening",
+    "task_id": "postbox-hardening-2",
     "last_phase": "phase 4",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1795036741.9003277,
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1795037796.5656414,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
     "continuations": [],
@@ -14,10 +14,7 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ],
-    "completed_at": 1795036870.1231918,
-    "completed_head": "cd326accc92df2390a58b0ba9b72748a6a268938",
-    "completed_tree": "47c1e526882ae8355fed7c506f38e6363cc568a1"
+    ]
   },
   "checkpoints": [
     {
@@ -117,6 +114,121 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "postbox-hardening-2",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/5] Store integrity: corrupt-line error model, strict base64, parse-before-write, directory fsync",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795037266.0564299,
+      "timestamp_str": "2026-11-19 00:27:46",
+      "agent": "opencode:postbox",
+      "impact_assessment": {
+        "why": "Stage-2 verification confirmed 14 real gaps in the shipped Postbox; the highest-impact ones let malformed input crash server threads and turn a corrupt line into an orphan append.",
+        "benefits": "A corrupt inbox produces a clear error instead of a traceback, and state survives power loss after file creation or atomic replacement.",
+        "risks": "contract: F09 moves /__clear off GET, so callers and README must change together; dependency: stdlib-only, no new packages; concurrency: parse-before-write must stay inside the existing lock or a trim could race an append; state: directory fsync must degrade safely on platforms without it.",
+        "mitigation": "One ADR and README table per contract change; raw-socket and direct-call failing-first tests for every branch; keep all store mutations under the existing lock; guard directory fsync with a platform-safe fallback; finish with check --strict."
+      },
+      "plan_digest": "f28826246c3d3c3d9579bf96ee2d606f92aeeeb572a980d07ca47ff741459aaa",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-hardening-2",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[1/5] Done: CorruptInboxError, strict base64, record-shape validation, parse-before-write, guarded directory fsync; 27 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795037384.7654371,
+      "timestamp_str": "2026-11-19 00:29:44",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-hardening-2",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[2/5] Done: defensive Content-Length, chunked rejection, POST/DELETE clear with GET 405, JSON 500 on inbox errors; 32 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795037494.835372,
+      "timestamp_str": "2026-11-19 00:31:34",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-hardening-2",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[3/5] Done: ambiguity detection, positive numeric flags, replay URL validation and all-method bodies, friendly corrupt-inbox errors; 38 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795037639.724441,
+      "timestamp_str": "2026-11-19 00:33:59",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-hardening-2",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[4/5] Done: pyproject.toml with console script, project-local CI workflow, ADR-003/004, README single-writer and endpoint contract, version 0.2.0",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795037789.5391476,
+      "timestamp_str": "2026-11-19 00:36:29",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-hardening-2",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[5/5] Phase 4 passed: codebase map regenerated, 4/4 gates green (hygiene, guidelines, secrets, 38 tests), package metadata and entry point validated",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795037796.5656414,
+      "timestamp_str": "2026-11-19 00:36:36",
+      "agent": "opencode:postbox",
+      "checklists": "passed",
+      "handoff": {
+        "state": "all gates pass, tree uncommitted",
+        "next": "commit locally, then complete the task and run check --strict",
+        "evidence": "aikit.py check postbox --allow-dirty 4/4 PASS, 38 tests"
+      },
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
     }
   ]
 }

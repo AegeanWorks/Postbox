@@ -3,8 +3,18 @@
 from __future__ import annotations
 
 import base64
+import binascii
 from dataclasses import dataclass
 from datetime import datetime, timezone
+
+
+class CorruptInboxError(ValueError):
+    """A record in the inbox cannot be decoded safely."""
+
+
+_REQUIRED_FIELDS = frozenset(
+    {"id", "method", "path", "headers", "body_b64", "received_at"}
+)
 
 
 def utcnow() -> str:
@@ -38,14 +48,49 @@ class CapturedRequest:
 
     @classmethod
     def from_dict(cls, data: dict) -> "CapturedRequest":
-        """Rebuild a request from its JSON-safe representation."""
+        """Rebuild a request from its JSON-safe representation.
+
+        A malformed record raises :class:`CorruptInboxError` rather than
+        leaking `KeyError`, `TypeError` or a silently mangled binary body.
+        """
+        if not isinstance(data, dict):
+            raise CorruptInboxError("record is not a JSON object")
+        missing = _REQUIRED_FIELDS - data.keys()
+        if missing:
+            raise CorruptInboxError(f"record missing field(s): {', '.join(sorted(missing))}")
+
+        for field in ("id", "method", "path", "received_at"):
+            if not isinstance(data[field], str):
+                raise CorruptInboxError(f"field '{field}' must be a string")
+        query = data.get("query", "")
+        if not isinstance(query, str):
+            raise CorruptInboxError("field 'query' must be a string")
+
+        raw_headers = data["headers"]
+        if not isinstance(raw_headers, (list, tuple)):
+            raise CorruptInboxError("field 'headers' must be a list of pairs")
+        headers: list[tuple[str, str]] = []
+        for pair in raw_headers:
+            if (
+                not isinstance(pair, (list, tuple))
+                or len(pair) != 2
+                or not all(isinstance(value, str) for value in pair)
+            ):
+                raise CorruptInboxError("field 'headers' must be a list of string pairs")
+            headers.append((pair[0], pair[1]))
+
+        try:
+            body = base64.b64decode(data["body_b64"], validate=True)
+        except (binascii.Error, ValueError, TypeError) as exc:
+            raise CorruptInboxError("field 'body_b64' is not valid base64") from exc
+
         return cls(
             id=data["id"],
             method=data["method"],
             path=data["path"],
-            query=data.get("query", ""),
-            headers=tuple((key, value) for key, value in data["headers"]),
-            body=base64.b64decode(data["body_b64"]),
+            query=query,
+            headers=tuple(headers),
+            body=body,
             received_at=data["received_at"],
         )
 

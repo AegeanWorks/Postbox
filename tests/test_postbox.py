@@ -5,17 +5,19 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import socket
 import tempfile
 import threading
 import unittest
 import urllib.error
 import urllib.request
 from pathlib import Path
+from unittest import mock
 
 from postbox.cli import main
-from postbox.models import CapturedRequest
+from postbox.models import CapturedRequest, CorruptInboxError
 from postbox.server import InboxServer
-from postbox.store import InboxStore, UnsupportedFormatError
+from postbox.store import AmbiguousIdError, InboxStore, UnsupportedFormatError
 
 
 def make_request(
@@ -46,6 +48,16 @@ class ModelTests(unittest.TestCase):
     def test_header_lookup_is_case_insensitive(self) -> None:
         self.assertEqual(make_request().header("content-type"), "application/json")
         self.assertIsNone(make_request().header("missing"))
+
+    def test_corrupt_base64_is_refused(self) -> None:
+        data = make_request().to_dict()
+        data["body_b64"] = "@@@@"
+        with self.assertRaises(CorruptInboxError):
+            CapturedRequest.from_dict(data)
+
+    def test_missing_record_key_is_refused(self) -> None:
+        with self.assertRaises(CorruptInboxError):
+            CapturedRequest.from_dict({"id": "x"})
 
 
 class StoreTests(unittest.TestCase):
@@ -87,6 +99,12 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(self.store.find("abc").id, "abc123")
         self.assertIsNone(self.store.find("zzz"))
 
+    def test_ambiguous_prefix_is_refused(self) -> None:
+        self.store.append(make_request(id="abc1"))
+        self.store.append(make_request(id="abc2"))
+        with self.assertRaises(AmbiguousIdError):
+            self.store.find("abc")
+
     def test_retention_keeps_newest_requests(self) -> None:
         store = InboxStore(self.path, max_requests=2)
         for index in range(3):
@@ -101,6 +119,35 @@ class StoreTests(unittest.TestCase):
 
     def test_missing_file_is_empty(self) -> None:
         self.assertEqual(InboxStore(self.path / "nested.jsonl").all(), [])
+
+    def test_corrupt_line_is_refused(self) -> None:
+        self.path.write_text(
+            '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"
+        )
+        with self.assertRaises(CorruptInboxError):
+            self.store.all()
+
+    def test_bad_record_shape_is_refused(self) -> None:
+        header = json.dumps({"format": "postbox-inbox", "version": 1}) + "\n"
+        self.path.write_text(header + json.dumps({"id": "x"}) + "\n", encoding="utf-8")
+        with self.assertRaises(CorruptInboxError):
+            self.store.all()
+
+    def test_failed_trim_leaves_no_orphan_line(self) -> None:
+        self.path.write_text(
+            '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"
+        )
+        store = InboxStore(self.path, max_requests=1)
+        before = self.path.read_bytes()
+        with self.assertRaises(CorruptInboxError):
+            store.append(make_request())
+        self.assertEqual(self.path.read_bytes(), before)
+
+    def test_directory_is_fsynced_on_create_and_clear(self) -> None:
+        with mock.patch("postbox.store._fsync_dir") as fsync_dir:
+            self.store.append(make_request())
+            self.store.clear()
+        self.assertGreaterEqual(fsync_dir.call_count, 2)
 
     def test_concurrent_appends_lose_no_requests(self) -> None:
         threads = [
@@ -132,6 +179,21 @@ class ServerTests(unittest.TestCase):
         self.server.server_close()
         self.thread.join(timeout=2)
 
+    def _raw(self, payload: bytes) -> bytes:
+        with socket.create_connection(("127.0.0.1", self.port), timeout=5) as sock:
+            sock.settimeout(5)
+            sock.sendall(payload)
+            chunks: list[bytes] = []
+            while True:
+                try:
+                    part = sock.recv(4096)
+                except socket.timeout:
+                    break
+                if not part:
+                    break
+                chunks.append(part)
+            return b"".join(chunks)
+
     def _post(self, path: str, payload: bytes) -> str:
         request = urllib.request.Request(
             f"http://127.0.0.1:{self.port}{path}",
@@ -156,9 +218,10 @@ class ServerTests(unittest.TestCase):
         ) as response:
             payload = json.loads(response.read())
         self.assertEqual(len(payload), 1)
-        with urllib.request.urlopen(
-            f"http://127.0.0.1:{self.port}/__clear", timeout=5
-        ) as response:
+        clear_request = urllib.request.Request(
+            f"http://127.0.0.1:{self.port}/__clear", data=b"", method="POST"
+        )
+        with urllib.request.urlopen(clear_request, timeout=5) as response:
             self.assertTrue(json.loads(response.read())["cleared"])
         self.assertEqual(self.store.count(), 0)
 
@@ -168,6 +231,50 @@ class ServerTests(unittest.TestCase):
         ) as response:
             payload = json.loads(response.read())
         self.assertEqual(payload, {"ok": True, "count": 0})
+
+    def test_malformed_content_length_is_rejected(self) -> None:
+        response = self._raw(
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nContent-Length: abc\r\n\r\n"
+        )
+        self.assertIn(b"400", response)
+        self.assertEqual(self.store.count(), 0)
+
+    def test_negative_content_length_is_rejected(self) -> None:
+        response = self._raw(
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nContent-Length: -5\r\n\r\n"
+        )
+        self.assertIn(b"400", response)
+        self.assertEqual(self.store.count(), 0)
+
+    def test_chunked_body_is_rejected(self) -> None:
+        response = self._raw(
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nTransfer-Encoding: chunked\r\n\r\n"
+            b"4\r\nwiki\r\n0\r\n\r\n"
+        )
+        self.assertIn(b"400", response)
+        self.assertEqual(self.store.count(), 0)
+
+    def test_get_clear_is_a_noop(self) -> None:
+        self._post("/hook", b"data")
+        response = self._raw(b"GET /__clear HTTP/1.0\r\nHost: x\r\n\r\n")
+        self.assertIn(b"405", response)
+        self.assertEqual(self.store.count(), 1)
+        with urllib.request.urlopen(
+            urllib.request.Request(
+                f"http://127.0.0.1:{self.port}/__clear", data=b"", method="POST"
+            ),
+            timeout=5,
+        ) as result:
+            self.assertTrue(json.loads(result.read())["cleared"])
+        self.assertEqual(self.store.count(), 0)
+
+    def test_corrupt_inbox_returns_json_error(self) -> None:
+        self.store.path.write_text(
+            '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"
+        )
+        response = self._raw(b"GET /__inbox HTTP/1.0\r\nHost: x\r\n\r\n")
+        self.assertIn(b"500", response)
+        self.assertIn(b"inbox error", response.lower())
 
     def test_oversized_body_is_rejected(self) -> None:
         request = urllib.request.Request(
@@ -187,10 +294,14 @@ class CliTests(unittest.TestCase):
         silence = contextlib.redirect_stdout(io.StringIO())
         silence.__enter__()
         self.addCleanup(silence.__exit__, None, None, None)
+        silence_error = contextlib.redirect_stderr(io.StringIO())
+        silence_error.__enter__()
+        self.addCleanup(silence_error.__exit__, None, None, None)
         self.path = Path(tmp.name) / "inbox.jsonl"
         self.store = InboxStore(self.path)
         self.store.append(make_request(body=b"payload"))
         self.store.append(make_request(id="def456", method="GET", path="/health"))
+        self.store.append(make_request(id="ghi789", method="DELETE", path="/item", body=b"bye"))
 
     def test_list_and_show(self) -> None:
         self.assertEqual(main(["--file", str(self.path), "list"]), 0)
@@ -213,6 +324,43 @@ class CliTests(unittest.TestCase):
     def test_clear(self) -> None:
         self.assertEqual(main(["--file", str(self.path), "clear"]), 0)
         self.assertEqual(self.store.count(), 0)
+
+    def test_ambiguous_prefix_returns_error(self) -> None:
+        self.store.append(make_request(id="abc2"))
+        self.assertEqual(main(["--file", str(self.path), "show", "abc"]), 1)
+
+    def test_invalid_numeric_flags_return_error(self) -> None:
+        self.assertEqual(main(["--file", str(self.path), "serve", "--max", "0"]), 2)
+        self.assertEqual(main(["--file", str(self.path), "list", "--limit", "-1"]), 2)
+
+    def test_bad_replay_url_returns_error(self) -> None:
+        self.assertEqual(
+            main(["--file", str(self.path), "replay", "abc", "--url", "not-a-url"]), 1
+        )
+
+    def test_replay_sends_body_for_delete(self) -> None:
+        target_store = InboxStore(Path(self.path).parent / "target.jsonl")
+        server = InboxServer(("127.0.0.1", 0), target_store)
+        port = server.server_address[1]
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            result = main(
+                ["--file", str(self.path), "replay", "ghi", "--url",
+                 f"http://127.0.0.1:{port}/target", "--timeout", "3"]
+            )
+            self.assertEqual(result, 0)
+            self.assertEqual(target_store.all()[0].body, b"bye")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_corrupt_inbox_gets_friendly_error(self) -> None:
+        self.path.write_text(
+            '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"
+        )
+        self.assertEqual(main(["--file", str(self.path), "list"]), 1)
 
 
 if __name__ == "__main__":

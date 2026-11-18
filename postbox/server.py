@@ -6,10 +6,11 @@ import json
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from postbox.models import CapturedRequest, utcnow
-from postbox.store import InboxStore
+from postbox.models import CapturedRequest, CorruptInboxError, utcnow
+from postbox.store import InboxStore, UnsupportedFormatError
 
 DEFAULT_MAX_BODY = 1_048_576  # 1 MiB
+_INBOX_ERRORS = (CorruptInboxError, UnsupportedFormatError, OSError)
 
 
 class InboxHandler(BaseHTTPRequestHandler):
@@ -33,14 +34,35 @@ class InboxHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _inbox_error(self, exc: Exception) -> None:
+        """Report a store failure as JSON instead of dropping the connection."""
+        self.close_connection = True
+        self._send_json({"error": f"inbox error: {exc}"}, 500)
+
+    def _bad_request(self, reason: str) -> None:
+        self.close_connection = True
+        self._send_json({"error": reason}, 400)
+
     def _capture(self) -> None:
-        length = int(self.headers.get("Content-Length", "0") or 0)
+        raw_length = self.headers.get("Content-Length")
+        try:
+            length = int(raw_length) if raw_length is not None else 0
+        except (TypeError, ValueError):
+            self._bad_request("invalid Content-Length")
+            return
+        if length < 0:
+            self._bad_request("negative Content-Length")
+            return
+        if "chunked" in self.headers.get("Transfer-Encoding", "").lower():
+            self._bad_request("chunked bodies are not supported; send Content-Length")
+            return
         if length > self.max_body:
             self.close_connection = True
             self._send_json(
                 {"error": "payload too large", "max_bytes": self.max_body}, 413
             )
             return
+
         body = self.rfile.read(length) if length > 0 else b""
         path, _, query = self.path.partition("?")
         request = CapturedRequest(
@@ -52,23 +74,47 @@ class InboxHandler(BaseHTTPRequestHandler):
             body=body,
             received_at=utcnow(),
         )
-        self.store.append(request)
+        try:
+            self.store.append(request)
+        except _INBOX_ERRORS as exc:
+            self._inbox_error(exc)
+            return
         self._send_json({"ok": True, "id": request.id})
 
-    def do_GET(self) -> None:
-        path = self.path.split("?")[0]
-        if path == "/__inbox":
-            self._send_json([item.to_dict() for item in self.store.all()])
-        elif path == "/__clear":
+    def _clear(self) -> None:
+        try:
             self.store.clear()
-            self._send_json({"ok": True, "cleared": True})
+        except _INBOX_ERRORS as exc:
+            self._inbox_error(exc)
+            return
+        self._send_json({"ok": True, "cleared": True})
+
+    def _route(self) -> None:
+        path = self.path.split("?")[0]
+        if path == "/__clear":
+            if self.command == "GET":
+                self.close_connection = True
+                self._send_json({"error": "use POST or DELETE to clear"}, 405)
+            else:
+                self._clear()
+        elif path == "/__inbox":
+            try:
+                self._send_json([item.to_dict() for item in self.store.all()])
+            except _INBOX_ERRORS as exc:
+                self._inbox_error(exc)
         elif path == "/__health":
-            self._send_json({"ok": True, "count": self.store.count()})
+            try:
+                self._send_json({"ok": True, "count": self.store.count()})
+            except _INBOX_ERRORS as exc:
+                self._inbox_error(exc)
         else:
             self._capture()
 
+    def do_GET(self) -> None:
+        self._route()
+
     def do_POST(self) -> None:
-        self._capture()
+        self._route()
 
     def do_PUT(self) -> None:
         self._capture()
@@ -77,7 +123,7 @@ class InboxHandler(BaseHTTPRequestHandler):
         self._capture()
 
     def do_DELETE(self) -> None:
-        self._capture()
+        self._route()
 
     def log_message(self, format: str, *args: object) -> None:
         """Silence default stderr logging; the inbox is the record."""
