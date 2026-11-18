@@ -1,11 +1,11 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-hardening-2",
-    "last_phase": "phase 4",
+    "task_id": "postbox-flake-413",
+    "last_phase": "phase 2",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1795037796.5656414,
+    "updated_at": 1795037958.8160303,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
     "continuations": [],
@@ -15,9 +15,15 @@
         "path": "projects/postbox"
       }
     ],
-    "completed_at": 1795037823.2943022,
-    "completed_head": "57391ed1b0ee625ae88de136c80ad8be5696d43c",
-    "completed_tree": "cbaf6f941f1270832deeaf702a7e8190564baabc"
+    "impact_assessment": {
+      "why": "Strict delivery exposed an intermittent WinError 10053: the handler closed the socket before the client finished sending an oversized body.",
+      "benefits": "Deterministic 413 responses and a green strict gate across repeated runs.",
+      "risks": "contract: none, the 413 status is unchanged; dependency: none; concurrency: draining must stay bounded so a large body cannot pin a thread; state: no store change.",
+      "mitigation": "Read at most 16 MiB of the declared body before answering, and verify with three consecutive full-suite runs."
+    },
+    "completed_at": 1795037965.5278904,
+    "completed_head": "1ed01cad4758f250f4d44bbd29939412c40855c8",
+    "completed_tree": "a97febd17e51ec75cebf753fb45fec4fcbb03e34"
   },
   "checkpoints": [
     {
@@ -243,6 +249,65 @@
       "timestamp_str": "2026-11-19 00:37:03",
       "agent": "opencode:postbox",
       "head": "57391ed1b0ee625ae88de136c80ad8be5696d43c",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
+    },
+    {
+      "task_id": "postbox-flake-413",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "Fix: drain oversized bodies before answering 413 to avoid WinError 10053 client abort; 3 consecutive green runs, 4/4 gates passed",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795037942.2805142,
+      "timestamp_str": "2026-11-19 00:39:02",
+      "agent": "opencode:postbox",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-flake-413",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/1] Fix 413 client-abort race in the HTTP handler",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795037958.8160303,
+      "timestamp_str": "2026-11-19 00:39:18",
+      "agent": "opencode:postbox",
+      "impact_assessment": {
+        "why": "Strict delivery exposed an intermittent WinError 10053: the handler closed the socket before the client finished sending an oversized body.",
+        "benefits": "Deterministic 413 responses and a green strict gate across repeated runs.",
+        "risks": "contract: none, the 413 status is unchanged; dependency: none; concurrency: draining must stay bounded so a large body cannot pin a thread; state: no store change.",
+        "mitigation": "Read at most 16 MiB of the declared body before answering, and verify with three consecutive full-suite runs."
+      },
+      "plan_digest": "07667334bd21264c950de0e19205ab61f102d9433007fd9b9a10b485ea3e44e7",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-flake-413",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-flake-413' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795037965.594486,
+      "timestamp_str": "2026-11-19 00:39:25",
+      "agent": "opencode:postbox",
+      "head": "1ed01cad4758f250f4d44bbd29939412c40855c8",
       "delivery": {
         "roots": [
           "."
