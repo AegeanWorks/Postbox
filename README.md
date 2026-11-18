@@ -48,6 +48,7 @@ postbox/
 │   ├── guidelines.md         <- project rules
 │   ├── decisions.md          <- ADR register
 │   ├── task_ledger.json      <- delivery ledger
+│   ├── media.json            <- reviewed brand media state
 │   └── codebase_map.md       <- generated AST symbol catalog
 ├── .gitignore                <- transient AIKit state excluded
 ├── assets/                   <- generated brand candidates (pending review)
