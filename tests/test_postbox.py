@@ -16,6 +16,7 @@ from pathlib import Path
 from unittest import mock
 
 from postbox.cli import is_loopback, main
+from postbox.lock import SingleWriterLock
 from postbox.models import (
     CapturedRequest,
     CorruptInboxError,
@@ -194,6 +195,31 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(self.store.count(), 8)
 
 
+class LockTests(unittest.TestCase):
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.path = Path(tmp.name) / "inbox.jsonl"
+
+    def test_lock_is_exclusive_and_releasable(self) -> None:
+        first = SingleWriterLock(self.path)
+        second = SingleWriterLock(self.path)
+        self.assertTrue(first.acquire())
+        self.assertTrue((Path(str(self.path) + ".lock")).exists())
+        self.assertFalse(second.acquire())
+        first.release()
+        self.assertTrue(second.acquire())
+        second.release()
+
+    def test_cli_refuses_when_lock_is_held(self) -> None:
+        holder = SingleWriterLock(self.path)
+        self.assertTrue(holder.acquire())
+        try:
+            self.assertEqual(main(["--file", str(self.path), "serve"]), 1)
+        finally:
+            holder.release()
+
+
 class ServerTests(unittest.TestCase):
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
@@ -277,11 +303,29 @@ class ServerTests(unittest.TestCase):
         self.assertIn(b"400", response)
         self.assertEqual(self.store.count(), 0)
 
-    def test_chunked_body_is_rejected(self) -> None:
+    def test_chunked_body_is_decoded(self) -> None:
         response = self._raw(
             b"POST /hook HTTP/1.0\r\nHost: x\r\nTransfer-Encoding: chunked\r\n\r\n"
             b"4\r\nwiki\r\n0\r\n\r\n"
         )
+        self.assertIn(b"200", response)
+        self.assertEqual(self.store.all()[0].body, b"wiki")
+
+    def test_chunked_oversize_body_is_rejected(self) -> None:
+        payload = (
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nTransfer-Encoding: chunked\r\n\r\n"
+            b"80\r\n" + b"x" * 128 + b"\r\n0\r\n\r\n"
+        )
+        response = self._raw(payload)
+        self.assertIn(b"413", response)
+        self.assertEqual(self.store.count(), 0)
+
+    def test_malformed_chunk_size_is_rejected(self) -> None:
+        payload = (
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nTransfer-Encoding: chunked\r\n\r\n"
+            b"zz\r\nwiki\r\n0\r\n\r\n"
+        )
+        response = self._raw(payload)
         self.assertIn(b"400", response)
         self.assertEqual(self.store.count(), 0)
 

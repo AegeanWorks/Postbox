@@ -10,6 +10,7 @@ import urllib.request
 from urllib.error import URLError
 
 from postbox import __version__
+from postbox.lock import SingleWriterLock
 from postbox.models import (
     REDACTED,
     SENSITIVE_HEADERS,
@@ -155,9 +156,18 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
             return 2
         if args.allow_public:
             print("WARNING: this inbox has no authentication; anyone who can reach it can read captures.")
-        print(f"Postbox listening on http://{args.host}:{args.port} (inbox: {args.file})")
-        serve(args.port, store, args.host, args.max_body)
-        return 0
+        lock = SingleWriterLock(args.file)
+        try:
+            if not lock.acquire():
+                print("Error: another serve process is already using this inbox file.")
+                print("Why: two writers can interleave appends with an atomic trim and lose data.")
+                print("Fix: stop the other server, or use a different --file.")
+                return 1
+            print(f"Postbox listening on http://{args.host}:{args.port} (inbox: {args.file})")
+            serve(args.port, store, args.host, args.max_body)
+            return 0
+        finally:
+            lock.release()
 
     if args.command == "list":
         requests = store.all()

@@ -68,6 +68,7 @@ postbox/
 ├── pyproject.toml            <- package metadata and console script
 ├── postbox/                  <- package
 │   ├── __init__.py           <- version marker
+│   ├── lock.py               <- cross-platform single-writer OS lock
 │   ├── models.py             <- immutable CapturedRequest and JSON/base64 codec
 │   ├── store.py              <- versioned append-only JSONL, atomic writes, retention
 │   ├── server.py             <- threaded HTTP handler, health and size limits
@@ -95,13 +96,14 @@ in memory.
 
 `GET /__clear` returns `405` so a prefetch cannot destroy captures. Bodies above
 `--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies
-are rejected with `400`; send a `Content-Length` instead. Malformed or negative
-`Content-Length` also gets `400`. A corrupt inbox produces a JSON `500` rather
-than a dropped connection. `serve --max N` keeps only the newest N requests by
-rewriting the file atomically.
+are decoded with the same cumulative size limit; malformed chunk framing gets
+`400`. Malformed or negative `Content-Length` also gets `400`. A corrupt inbox
+produces a JSON `500` rather than a dropped connection. `serve --max N` keeps only
+the newest N requests by rewriting the file atomically.
 
-Only one `serve` process should write a given `--file`. The lock is in-process;
-two processes sharing a file can lose updates. Run one inbox per file.
+Only one `serve` process can write a given `--file`: an OS-level lock on
+`<file>.lock` is held for the server's lifetime, and a second server exits with a
+clear error. Read commands (`list`, `show`) still work while a server runs.
 
 ## Security
 

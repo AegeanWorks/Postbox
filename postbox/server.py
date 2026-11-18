@@ -19,6 +19,14 @@ DEFAULT_MAX_BODY = 1_048_576  # 1 MiB
 _INBOX_ERRORS = (CorruptInboxError, UnsupportedFormatError, OSError)
 
 
+class _BadChunkedBody(ValueError):
+    """The chunked stream could not be decoded safely."""
+
+
+class _OversizeChunkedBody(ValueError):
+    """The decoded chunked body exceeds the configured limit."""
+
+
 class InboxHandler(BaseHTTPRequestHandler):
     """Handler that captures requests and exposes a small inspection API."""
 
@@ -47,6 +55,37 @@ class InboxHandler(BaseHTTPRequestHandler):
     def _bad_request(self, reason: str) -> None:
         self._send_json({"error": reason}, 400)
 
+    def _read_chunked_body(self) -> bytes:
+        """Decode a chunked body with bounded reads and a cumulative size cap."""
+        chunks: list[bytes] = []
+        total = 0
+        while True:
+            line = self.rfile.readline(128).strip()
+            if not line:
+                raise _BadChunkedBody("empty chunk size")
+            try:
+                size = int(line.split(b";", 1)[0], 16)
+            except ValueError as exc:
+                raise _BadChunkedBody("invalid chunk size") from exc
+            if size < 0:
+                raise _BadChunkedBody("negative chunk size")
+            if size == 0:
+                while True:
+                    trailer = self.rfile.readline(65536)
+                    if trailer in (b"\r\n", b"\n", b""):
+                        break
+                break
+            total += size
+            if total > self.max_body:
+                raise _OversizeChunkedBody("chunked body exceeds max_body")
+            data = self.rfile.read(size)
+            if len(data) != size:
+                raise _BadChunkedBody("truncated chunk")
+            chunks.append(data)
+            if self.rfile.read(2) != b"\r\n":
+                raise _BadChunkedBody("missing chunk delimiter")
+        return b"".join(chunks)
+
     def _capture(self) -> None:
         raw_length = self.headers.get("Content-Length")
         try:
@@ -58,9 +97,17 @@ class InboxHandler(BaseHTTPRequestHandler):
             self._bad_request("negative Content-Length")
             return
         if "chunked" in self.headers.get("Transfer-Encoding", "").lower():
-            self._bad_request("chunked bodies are not supported; send Content-Length")
-            return
-        if length > self.max_body:
+            try:
+                body = self._read_chunked_body()
+            except _BadChunkedBody as exc:
+                self._bad_request(str(exc))
+                return
+            except _OversizeChunkedBody:
+                self._send_json(
+                    {"error": "payload too large", "max_bytes": self.max_body}, 413
+                )
+                return
+        elif length > self.max_body:
             # Drain a bounded amount so the client finishes its write before
             # we answer; closing early aborts the client's send (WinError 10053).
             self.rfile.read(min(length, 16 * 1024 * 1024))
@@ -68,8 +115,8 @@ class InboxHandler(BaseHTTPRequestHandler):
                 {"error": "payload too large", "max_bytes": self.max_body}, 413
             )
             return
-
-        body = self.rfile.read(length) if length > 0 else b""
+        else:
+            body = self.rfile.read(length) if length > 0 else b""
         path, _, query = self.path.partition("?")
         request = CapturedRequest(
             id=uuid.uuid4().hex[:12],

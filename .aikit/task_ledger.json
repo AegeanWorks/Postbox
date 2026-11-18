@@ -1,11 +1,11 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-ledger-tree",
+    "task_id": "postbox-transport",
     "last_phase": "phase 4",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1795038479.8272593,
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1795039193.5050645,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
     "continuations": [],
@@ -14,110 +14,9 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ],
-    "completed_at": 1795038481.1017516,
-    "completed_head": "f178aab7b71d079aab1668dbfa6b37004f489a8b",
-    "completed_tree": "91a22bb37a8ff9727d263215fc9de624bdc4d5d8"
+    ]
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-hardening",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[4/4] Phase 4 passed: codebase map regenerated, ADR-001/002 recorded, AL-1.1 license and topics set, cold-start README verified; 4/4 gates green (hygiene, guidelines, secrets, 21 tests)",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795036741.9003277,
-      "timestamp_str": "2026-11-19 00:19:01",
-      "agent": "opencode:postbox",
-      "checklists": "passed",
-      "handoff": {
-        "state": "all gates pass, tree uncommitted per PRINCIPLE-018 R1",
-        "next": "commit the untracked project files when the user authorizes, then run check --strict",
-        "evidence": "aikit.py check postbox --allow-dirty 4/4 PASS"
-      },
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
-    {
-      "task_id": "postbox-hardening",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-hardening' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795036870.2731192,
-      "timestamp_str": "2026-11-19 00:21:10",
-      "agent": "opencode:postbox",
-      "head": "cd326accc92df2390a58b0ba9b72748a6a268938",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
-    {
-      "task_id": "postbox-hardening-2",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/5] Store integrity: corrupt-line error model, strict base64, parse-before-write, directory fsync",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795037266.0564299,
-      "timestamp_str": "2026-11-19 00:27:46",
-      "agent": "opencode:postbox",
-      "impact_assessment": {
-        "why": "Stage-2 verification confirmed 14 real gaps in the shipped Postbox; the highest-impact ones let malformed input crash server threads and turn a corrupt line into an orphan append.",
-        "benefits": "A corrupt inbox produces a clear error instead of a traceback, and state survives power loss after file creation or atomic replacement.",
-        "risks": "contract: F09 moves /__clear off GET, so callers and README must change together; dependency: stdlib-only, no new packages; concurrency: parse-before-write must stay inside the existing lock or a trim could race an append; state: directory fsync must degrade safely on platforms without it.",
-        "mitigation": "One ADR and README table per contract change; raw-socket and direct-call failing-first tests for every branch; keep all store mutations under the existing lock; guard directory fsync with a platform-safe fallback; finish with check --strict."
-      },
-      "plan_digest": "f28826246c3d3c3d9579bf96ee2d606f92aeeeb572a980d07ca47ff741459aaa",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
-    {
-      "task_id": "postbox-hardening-2",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[1/5] Done: CorruptInboxError, strict base64, record-shape validation, parse-before-write, guarded directory fsync; 27 tests green",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795037384.7654371,
-      "timestamp_str": "2026-11-19 00:29:44",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
-    {
-      "task_id": "postbox-hardening-2",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[2/5] Done: defensive Content-Length, chunked rejection, POST/DELETE clear with GET 405, JSON 500 on inbox errors; 32 tests green",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795037494.835372,
-      "timestamp_str": "2026-11-19 00:31:34",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-hardening-2",
       "phase": "phase 3",
@@ -400,6 +299,103 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "postbox-transport",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/4] Decode chunked request bodies with bounded reads and size limits",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795038724.3305602,
+      "timestamp_str": "2026-11-19 00:52:04",
+      "agent": "opencode:postbox",
+      "impact_assessment": {
+        "why": "A verified probe shows chunked POSTs are rejected with 400, so a sender using Transfer-Encoding: chunked cannot be captured at all.",
+        "benefits": "Postbox captures bodies from standard HTTP clients that stream without Content-Length.",
+        "risks": "contract: chunked changes from 400 to accepted, so README and ADR must follow; dependency: stdlib only; concurrency: the decoder runs before the store lock and cannot block it; state: a malformed stream must never produce a partial record.",
+        "mitigation": "Bound every readline, cap the accumulated body at max_body, return 400/413 before constructing a record, and use raw-socket known-answer tests."
+      },
+      "plan_digest": "cf552803dc75c128867acd6231b33634c3e18640b93ac35029b216ad784ce95f",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-transport",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[1/4] Done: chunked bodies decoded with bounded reads, 413 on oversize, 400 on malformed; 47 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795038804.0401418,
+      "timestamp_str": "2026-11-19 00:53:24",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-transport",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[2/4] Done: OS-level single-writer lock (msvcrt/flock), second serve refused with Why/Fix; 49 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795038873.5860355,
+      "timestamp_str": "2026-11-19 00:54:33",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-transport",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[3/4] Done: README chunked and single-writer contract, ADR-006/007; lock refactored to os.open for hygiene; 49 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795039192.9867136,
+      "timestamp_str": "2026-11-19 00:59:52",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-transport",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[4/4] Phase 4 passed: 4/4 gates green (hygiene, guidelines, secrets, 49 tests), map regenerated",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795039193.5050645,
+      "timestamp_str": "2026-11-19 00:59:53",
+      "agent": "opencode:postbox",
+      "checklists": "passed",
+      "handoff": {
+        "state": "gates green, tree uncommitted",
+        "next": "commit, complete, strict check"
+      },
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
     }
   ]
 }

@@ -6,14 +6,14 @@
 ---
 
 ## 📊 Codebase Metrics
-- **Total Python Modules**: `6`
-- **Total Classes**: `11`
+- **Total Python Modules**: `7`
+- **Total Classes**: `15`
 - **Total Top-Level Functions**: `14`
-- **Total Class Methods**: `82`
-- **Total Source Lines**: `1201`
+- **Total Class Methods**: `91`
+- **Total Source Lines**: `1363`
 
 ## 🧭 Map Coverage
-- **Indexed**: python (`6` module(s))
+- **Indexed**: python (`7` module(s))
 - **Not indexed by this map**: none (no non-Python source files were found)
 
 ---
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `231` lines
+**Size**: `241` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -41,6 +41,19 @@
 - `def _replay(request, url, timeout)`
 - `def _dispatch(args, store)`
 - `def main(argv)` - *Run the CLI and return an exit code.*
+
+---
+
+### [`postbox/lock.py`](postbox/lock.py)
+> *Cross-platform single-writer lock for a Postbox inbox file.*
+
+**Size**: `61` lines
+
+**Classes:**
+- `class SingleWriterLock` - *An advisory exclusive lock on ``<inbox>.lock`` for a process lifetime.*
+  - Method `.__init__(inbox_path)`
+  - Method `.acquire()` - *Take the lock, returning False when another writer already holds it.*
+  - Method `.release()` - *Release the lock and close its descriptor; safe to call twice.*
 
 ---
 
@@ -67,15 +80,18 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `168` lines
+**Size**: `215` lines
 
 **Classes:**
+- `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
+- `class _OversizeChunkedBody` - *The decoded chunked body exceeds the configured limit.*
 - `class InboxHandler` - *Handler that captures requests and exposes a small inspection API.*
   - Property `.store`
   - Property `.max_body`
   - Method `._send_json(payload, status)`
   - Method `._inbox_error(exc)` - *Report a store failure as JSON instead of dropping the connection.*
   - Method `._bad_request(reason)`
+  - Method `._read_chunked_body()` - *Decode a chunked body with bounded reads and a cumulative size cap.*
   - Method `._capture()`
   - Method `._clear()`
   - Method `._route()`
@@ -123,7 +139,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `450` lines
+**Size**: `494` lines
 
 **Classes:**
 - `class ModelTests`
@@ -150,6 +166,10 @@
   - Method `.test_failed_trim_leaves_no_orphan_line()`
   - Method `.test_directory_is_fsynced_on_create_and_clear()`
   - Method `.test_concurrent_appends_lose_no_requests()`
+- `class LockTests`
+  - Method `.setUp()`
+  - Method `.test_lock_is_exclusive_and_releasable()`
+  - Method `.test_cli_refuses_when_lock_is_held()`
 - `class ServerTests`
   - Method `.setUp()`
   - Method `._stop_server()`
@@ -160,7 +180,9 @@
   - Method `.test_health_endpoint()`
   - Method `.test_malformed_content_length_is_rejected()`
   - Method `.test_negative_content_length_is_rejected()`
-  - Method `.test_chunked_body_is_rejected()`
+  - Method `.test_chunked_body_is_decoded()`
+  - Method `.test_chunked_oversize_body_is_rejected()`
+  - Method `.test_malformed_chunk_size_is_rejected()`
   - Method `.test_get_clear_is_a_noop()`
   - Method `.test_corrupt_inbox_returns_json_error()`
   - Method `.test_secrets_are_redacted_on_capture()`

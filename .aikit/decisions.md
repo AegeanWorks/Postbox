@@ -46,3 +46,17 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed Authorization, Cookie and token values stored verbatim, and --host 0.0.0.0 was accepted despite an unauthenticated handler and a 'localhost only' claim.
 - **Decision**: Store sensitive headers and query values as [REDACTED], skip redacted headers on replay, bind to loopback by default, and require --allow-public for any other host.
 - **Consequences**: Debuggers keep method, path and non-sensitive headers; credentials are not persisted or replayed. Users who need a shared inbox must opt in explicitly and accept the lack of authentication.
+
+### ADR-006: Decode chunked request bodies
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: Transfer-Encoding: chunked was rejected with 400, so senders that stream without Content-Length could not be captured.
+- **Decision**: Decode chunked bodies with bounded line reads, a cumulative max_body cap, trailer consumption, and 400/413 for malformed or oversize streams.
+- **Consequences**: More clients can be captured; the decoder adds a small parsing surface that is covered by raw-socket tests, and no body is stored until decoding succeeds.
+
+### ADR-007: Enforce single writer with an OS lock
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: ADR-004 documented a single-writer rule but nothing prevented a second serve process from sharing a file and losing updates during an atomic trim.
+- **Decision**: Hold an OS-level exclusive lock on <file>.lock for the serve process lifetime (msvcrt on Windows, flock elsewhere); a second serve exits 1 with a Why/Fix message.
+- **Consequences**: The documented limit is now enforced. The OS releases the lock on process death, so no stale-lock recovery is needed; read commands remain available.
