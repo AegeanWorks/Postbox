@@ -8,6 +8,8 @@
 A local webhook inbox with replay. Point a webhook at it, inspect what arrived,
 then replay it to another target. Zero dependencies, Python 3.10+, localhost only.
 
+> **Archived**: Testbed for AIKit capabilities: attach, gates, ADRs, Reforge audit (66 commits), publish and push. Goal achieved; no further development planned. (archived 2026-11-19). This project is read-only; its GitHub repository is archived.
+
 ## Why
 
 Debugging webhooks usually means pasting a payload into a public request-bin

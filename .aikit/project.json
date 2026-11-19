@@ -38,5 +38,11 @@
   "ui_checked_at": "2026-11-19",
   "ui_source": "detected",
   "topics_source": "ai",
-  "topics_reviewed_at": "2026-11-19"
+  "topics_reviewed_at": "2026-11-19",
+  "archived": true,
+  "archived_at": "2026-11-19",
+  "archive_reason": "Testbed for AIKit capabilities: attach, gates, ADRs, Reforge audit (66 commits), publish and push. Goal achieved; no further development planned.",
+  "archive_repo": "AegeanWorks/Postbox",
+  "archive_description": "[ARCHIVED] A local webhook inbox with replay. Point a webhook at it, inspect what arrived, then replay it to another target. Zero dependencies, Python 3.10+, localhost only.",
+  "archive_origin": "projects/postbox"
 }
