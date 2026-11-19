@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-reserved",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795088422.2170496,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,26 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795088448.5961778,
+    "completed_head": "299fd15bbbedb765a1b30180a1c76d343793da94",
+    "completed_tree": "ffa78b4a2b771458b2076c0528494bee8ec4e6d6"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-errors",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-errors' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795086989.0686142,
-      "timestamp_str": "2026-11-19 14:16:29",
-      "agent": "opencode:postbox",
-      "head": "fa3100ee33baa54edaa4e1f3a8876d577e05c17b",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-errors2",
       "phase": "phase 2",
@@ -400,6 +386,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-reserved",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-reserved' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795088448.6595628,
+      "timestamp_str": "2026-11-19 14:40:48",
+      "agent": "opencode:postbox",
+      "head": "299fd15bbbedb765a1b30180a1c76d343793da94",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
