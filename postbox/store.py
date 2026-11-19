@@ -179,7 +179,7 @@ class InboxStore:
         """Append a batch in one atomic write, honouring retention."""
         with self._lock:
             self._ensure_file()
-            existing = self._decode(self._read_lines()) if self.max_requests else []
+            existing = self._decode(self._read_lines())
             combined = existing + list(requests)
             if self.max_requests is not None and len(combined) > self.max_requests:
                 combined = combined[-self.max_requests :]

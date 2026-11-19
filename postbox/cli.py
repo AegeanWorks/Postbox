@@ -312,8 +312,11 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
         if not isinstance(records, list):
             raise CorruptInboxError("snapshot requests must be a list")
         requests = [CapturedRequest.from_dict(record) for record in records]
-        store.extend(requests)
-        print(f"Imported {len(requests)} request(s).")
+        known_ids = {request.id for request in store.all()}
+        fresh = [request for request in requests if request.id not in known_ids]
+        store.extend(fresh)
+        skipped = len(requests) - len(fresh)
+        print(f"Imported {len(fresh)} request(s), skipped {skipped} duplicate(s).")
         return 0
 
     if args.command == "replay":

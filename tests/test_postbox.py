@@ -160,6 +160,11 @@ class StoreTests(unittest.TestCase):
         with self.assertRaises(AmbiguousIdError):
             self.store.delete("abc")
 
+    def test_extend_preserves_existing_records(self) -> None:
+        self.store.append(make_request(id="a"))
+        self.store.extend([make_request(id="b")])
+        self.assertEqual([r.id for r in self.store.all()], ["a", "b"])
+
     def test_extend_appends_a_batch(self) -> None:
         self.store.extend([make_request(id="a"), make_request(id="b")])
         self.assertEqual([r.id for r in self.store.all()], ["a", "b"])
@@ -496,6 +501,30 @@ class CliTests(unittest.TestCase):
         payload = json.loads(self._stdout.getvalue())
         self.assertEqual(payload["format"], "postbox-export")
         self.assertEqual(len(payload["requests"]), 3)
+
+    def test_import_preserves_existing_records(self) -> None:
+        export_path = Path(self.path).parent / "snapshot.json"
+        self.assertEqual(
+            main(["--file", str(self.path), "export", "--output", str(export_path)]), 0
+        )
+        other = Path(self.path).parent / "other.jsonl"
+        other_store = InboxStore(other)
+        other_store.append(make_request(id="kept"))
+        self.assertEqual(main(["--file", str(other), "import", str(export_path)]), 0)
+        self.assertEqual(
+            [r.id for r in other_store.all()], ["kept", "abc123", "def456", "ghi789"]
+        )
+
+    def test_import_skips_duplicate_ids(self) -> None:
+        export_path = Path(self.path).parent / "dupe-snapshot.json"
+        main(["--file", str(self.path), "export", "--output", str(export_path)])
+        target = Path(self.path).parent / "dupe-target.jsonl"
+        main(["--file", str(target), "import", str(export_path)])
+        self._stdout.seek(0)
+        self._stdout.truncate(0)
+        main(["--file", str(target), "import", str(export_path)])
+        self.assertIn("skipped 3", self._stdout.getvalue())
+        self.assertEqual(len(InboxStore(target).all()), 3)
 
     def test_import_refuses_unknown_version(self) -> None:
         export_path = Path(self.path).parent / "bad-version.json"

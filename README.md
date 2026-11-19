@@ -140,7 +140,9 @@ and compare against `received_at` in UTC.
 
 `export` writes a versioned `postbox-export` JSON envelope to stdout or
 `--output`; `import` validates the format and version before appending the
-records atomically. Unknown versions are refused without modifying the file.
+records atomically. It preserves captures already in the target inbox and skips
+records whose id is already present, reporting both counts. Unknown versions
+are refused without modifying the file.
 It is a development tool: it binds to `127.0.0.1` by default, has no
 authentication, and is not meant to be exposed to the public internet.
 

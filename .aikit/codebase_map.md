@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `15`
 - **Total Top-Level Functions**: `16`
-- **Total Class Methods**: `117`
-- **Total Source Lines**: `1701`
+- **Total Class Methods**: `120`
+- **Total Source Lines**: `1733`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `353` lines
+**Size**: `356` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -148,7 +148,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `657` lines
+**Size**: `686` lines
 
 **Classes:**
 - `class ModelTests`
@@ -171,6 +171,7 @@
   - Method `.test_delete_removes_only_the_match()`
   - Method `.test_delete_returns_none_when_missing()`
   - Method `.test_delete_refuses_ambiguous_prefix()`
+  - Method `.test_extend_preserves_existing_records()`
   - Method `.test_extend_appends_a_batch()`
   - Method `.test_extend_honours_retention()`
   - Method `.test_clear_empties_without_temp_files()`
@@ -216,6 +217,8 @@
   - Method `.test_delete_missing_returns_error()`
   - Method `.test_export_import_roundtrip()`
   - Method `.test_export_stdout_is_json()`
+  - Method `.test_import_preserves_existing_records()`
+  - Method `.test_import_skips_duplicate_ids()`
   - Method `.test_import_refuses_unknown_version()`
   - Method `.test_import_refuses_bad_record()`
   - Method `.test_list_filters_by_time()`

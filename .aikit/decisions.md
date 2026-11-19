@@ -74,3 +74,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: HEAD and OPTIONS requests returned 501 and were not captured, there was no targeted delete, and the inbox endpoint always returned the whole file.
 - **Decision**: Route all common HTTP methods through the capture path with bodyless HEAD responses, add an ambiguity-safe delete command, and support limit/offset pagination while keeping the bare-array default.
 - **Consequences**: No webhook method is silently missed and large inboxes can be paged; existing callers of the inbox endpoint keep the same default response shape.
+
+### ADR-010: Batch appends preserve existing records and imports are idempotent
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed extend() replaced the whole inbox when no retention cap was set, so an import into a non-empty inbox destroyed its captures; a second import would then duplicate ids.
+- **Decision**: Always decode existing records in extend(), and skip imported records whose id already exists in the target, reporting imported and skipped counts.
+- **Consequences**: Imports are safe to repeat and non-destructive; a caller who wants a fresh inbox must clear it or use a different --file before importing.
