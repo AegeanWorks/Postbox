@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-importcl",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795089602.2205038,
     "owner": "opencode:postbox",
     "lease_until": 1795096802.2205038,
@@ -15,30 +15,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795089650.2122066,
+    "completed_head": "ee83332f29337d283cdd2b0c5343151956a91d62",
+    "completed_tree": "d00d310b246926512a66f456be04e07a77c0423a"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-jsonout",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[2/2] Phase 4 passed: 5/5 gates green, 94 tests",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795087793.2041285,
-      "timestamp_str": "2026-11-19 14:29:53",
-      "agent": "opencode:postbox",
-      "checklists": "passed",
-      "handoff": {
-        "next": "commit, complete, strict check"
-      },
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-jsonout",
       "phase": "completed",
@@ -402,6 +384,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-importcl",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-importcl' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795089650.2819858,
+      "timestamp_str": "2026-11-19 15:00:50",
+      "agent": "opencode:postbox",
+      "head": "ee83332f29337d283cdd2b0c5343151956a91d62",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
