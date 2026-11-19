@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-redaction",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795085685.0130053,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,26 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795085713.5644476,
+    "completed_head": "43509bd6dbcac5e770f57e072ac81fd99ac03041",
+    "completed_tree": "182bf8b1a4c33f866093f86babe5169bcbac7705"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-clear",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-clear' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795067273.0209312,
-      "timestamp_str": "2026-11-19 08:47:53",
-      "agent": "opencode:postbox",
-      "head": "cb4c10f40e9fe071ffa19837b779d9be1c9e9678",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-integrity",
       "phase": "phase 2",
@@ -400,6 +386,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-redaction",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-redaction' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795085713.6396,
+      "timestamp_str": "2026-11-19 13:55:13",
+      "agent": "opencode:postbox",
+      "head": "43509bd6dbcac5e770f57e072ac81fd99ac03041",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
