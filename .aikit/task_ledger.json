@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-writelock",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795086342.1457548,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,26 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795086373.095943,
+    "completed_head": "76f13c756b0be88bee483d85fb3d8f78b277a5a0",
+    "completed_tree": "e0c9355fc7bab8e35f08ee1779ad9da04da2d521"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-time",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-time' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795067967.1573746,
-      "timestamp_str": "2026-11-19 08:59:27",
-      "agent": "opencode:postbox",
-      "head": "b77e53e52b0e20b83237f4e5030f9e828c4d7c39",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-disconnect",
       "phase": "phase 2",
@@ -400,6 +386,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-writelock",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-writelock' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795086373.2557333,
+      "timestamp_str": "2026-11-19 14:06:13",
+      "agent": "opencode:postbox",
+      "head": "76f13c756b0be88bee483d85fb3d8f78b277a5a0",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
