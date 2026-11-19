@@ -46,11 +46,18 @@ class InboxHandler(BaseHTTPRequestHandler):
     def max_body(self) -> int:
         return self.server.max_body  # type: ignore[attr-defined]
 
-    def _send_json(self, payload: object, status: int = 200) -> None:
+    def _send_json(
+        self,
+        payload: object,
+        status: int = 200,
+        extra_headers: dict[str, str] | None = None,
+    ) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        for name, value in (extra_headers or {}).items():
+            self.send_header(name, value)
         self.end_headers()
         if self.command != "HEAD":
             try:
@@ -195,7 +202,11 @@ class InboxHandler(BaseHTTPRequestHandler):
             return
         if path == "/__clear":
             if self.command not in {"POST", "DELETE"}:
-                self._send_json({"error": "use POST or DELETE to clear"}, 405)
+                self._send_json(
+                    {"error": "use POST or DELETE to clear"},
+                    405,
+                    {"Allow": "POST, DELETE"},
+                )
             else:
                 self._clear()
         elif path == "/__inbox":

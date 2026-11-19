@@ -165,3 +165,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed POST /__inbox and PUT /__health received a control response and were never captured, silently discarding webhooks.
 - **Decision**: Fall through to capture for any non-GET/HEAD request to /__inbox or /__health; clear remains POST/DELETE only.
 - **Consequences**: No request is lost because of its path; the control responses stay unchanged for the documented GET/HEAD callers.
+
+### ADR-023: Advertise allowed methods on the clear 405
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed GET /__clear returned 405 without the Allow header required for that status.
+- **Decision**: Send Allow: POST, DELETE on the clear-endpoint 405 by allowing extra headers in the JSON response helper.
+- **Consequences**: The response is RFC-compliant and clients can discover the supported methods; the status and body are unchanged.

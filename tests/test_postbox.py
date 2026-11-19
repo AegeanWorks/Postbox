@@ -491,6 +491,10 @@ class ServerTests(unittest.TestCase):
             self.assertTrue(json.loads(result.read())["cleared"])
         self.assertEqual(self.store.count(), 0)
 
+    def test_clear_405_advertises_allowed_methods(self) -> None:
+        response = self._raw(b"GET /__clear HTTP/1.0\r\nHost: x\r\n\r\n").decode("latin-1")
+        self.assertIn("Allow: POST, DELETE", response)
+
     def test_read_only_methods_on_clear_are_noops(self) -> None:
         for method in (b"HEAD", b"OPTIONS", b"CONNECT", b"TRACE"):
             self._post("/hook", b"data")

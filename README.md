@@ -111,7 +111,8 @@ Invalid pagination values get `400`; without query parameters the inbox still re
 the original bare JSON array.
 
 Only `POST /__clear` and `DELETE /__clear` clear the inbox; every other method,
-including HEAD and OPTIONS, returns `405` so a prefetch cannot destroy captures.
+including HEAD and OPTIONS, returns `405` with `Allow: POST, DELETE` so a prefetch
+cannot destroy captures and clients can discover the supported methods.
 Bodies above
 `--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies
 are decoded with the same cumulative size limit; malformed chunk framing gets

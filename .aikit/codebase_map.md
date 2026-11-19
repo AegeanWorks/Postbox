@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `18`
-- **Total Class Methods**: `148`
-- **Total Source Lines**: `2099`
+- **Total Class Methods**: `149`
+- **Total Source Lines**: `2114`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -85,7 +85,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `286` lines
+**Size**: `297` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -93,7 +93,7 @@
 - `class InboxHandler` - *Handler that captures requests and exposes a small inspection API.*
   - Property `.store`
   - Property `.max_body`
-  - Method `._send_json(payload, status)`
+  - Method `._send_json(payload, status, extra_headers)`
   - Method `._inbox_error(exc)` - *Report a store failure as JSON instead of dropping the connection.*
   - Method `._bad_request(reason)`
   - Method `._read_chunked_body()` - *Decode a chunked body with bounded reads and a cumulative size cap.*
@@ -152,7 +152,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `923` lines
+**Size**: `927` lines
 
 **Classes:**
 - `class ModelTests`
@@ -214,6 +214,7 @@
   - Method `.test_chunked_oversize_body_is_rejected()`
   - Method `.test_malformed_chunk_size_is_rejected()`
   - Method `.test_get_clear_is_a_noop()`
+  - Method `.test_clear_405_advertises_allowed_methods()`
   - Method `.test_read_only_methods_on_clear_are_noops()`
   - Method `.test_truncated_body_is_rejected()`
   - Method `.test_clear_with_body_does_not_abort_client()`
