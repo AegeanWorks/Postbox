@@ -32,7 +32,7 @@ python -m unittest discover -s tests
 
 - **Project gate from the workspace root**: `python aikit.py check postbox --allow-dirty`
 - **Install as a command**: `pip install .` then `postbox --help`
-- **Start the inbox**: `python -m postbox.cli serve --port 8787`
+- **Start the inbox**: `python -m postbox.cli serve --port 8787` (`--port 0` prints the OS-assigned port)
 - **List captures**: `python -m postbox.cli --file inbox.jsonl list`
 - **Inspect one**: `python -m postbox.cli --file inbox.jsonl show <id>`
 - **Replay one**: `python -m postbox.cli --file inbox.jsonl replay <id> --url http://127.0.0.1:3000/hook`

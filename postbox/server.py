@@ -255,6 +255,11 @@ class InboxServer(ThreadingHTTPServer):
         self.max_body = max_body
         super().__init__(address, InboxHandler)
 
+    def url(self) -> str:
+        """Return the bound URL, including an OS-assigned port when requested."""
+        host, port = self.server_address[:2]
+        return f"http://{host}:{port}"
+
 
 def serve(
     port: int,
@@ -264,6 +269,7 @@ def serve(
 ) -> None:
     """Run the inbox until interrupted."""
     server = InboxServer((host, port), store, max_body)
+    print(f"Postbox listening on {server.url()} (inbox: {store.path})")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

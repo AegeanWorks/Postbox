@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `16`
-- **Total Class Methods**: `133`
-- **Total Source Lines**: `1874`
+- **Total Class Methods**: `135`
+- **Total Source Lines**: `1883`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `356` lines
+**Size**: `355` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -83,7 +83,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `272` lines
+**Size**: `278` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -111,6 +111,7 @@
   - Method `.log_message(format, *args)` - *Silence default stderr logging; the inbox is the record.*
 - `class InboxServer` - *Threaded HTTP server bound to an :class:`InboxStore`.*
   - Method `.__init__(address, store, max_body)`
+  - Method `.url()` - *Return the bound URL, including an OS-assigned port when requested.*
 
 **Functions:**
 - `def serve(port, store, host, max_body)` - *Run the inbox until interrupted.*
@@ -149,7 +150,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `788` lines
+**Size**: `792` lines
 
 **Classes:**
 - `class ModelTests`
@@ -195,6 +196,7 @@
   - Method `._stop_server()`
   - Method `._raw(payload)`
   - Method `._post(path, payload)`
+  - Method `.test_url_reports_the_bound_port()`
   - Method `.test_request_is_captured()`
   - Method `.test_inspect_and_clear_endpoints()`
   - Method `.test_inbox_pagination()`

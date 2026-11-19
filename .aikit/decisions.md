@@ -116,3 +116,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed X-Access-Token, Api-Key, access_token and refresh_token were stored verbatim despite redaction being enabled.
 - **Decision**: Add those names (plus X-CSRF-Token, Authentication and auth) to the sensitive header and query sets used at capture and replay.
 - **Consequences**: Common OAuth and API credentials no longer persist in the inbox; the defensive lists are exact case-insensitive matches, so unrelated fields keep their values.
+
+### ADR-016: Advertise the bound port after server creation
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: With --port 0 the OS assigns an ephemeral port, but the CLI printed the requested 0, giving users an unusable URL.
+- **Decision**: Derive the startup URL from server.server_address after binding, via InboxServer.url(); the CLI no longer formats the requested port itself.
+- **Consequences**: Fixed-port output is unchanged; ephemeral-port runs now print a connectable URL.

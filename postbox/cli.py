@@ -222,7 +222,6 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
                 print("Why: two writers can interleave appends with an atomic trim and lose data.")
                 print("Fix: stop the other server, or use a different --file.")
                 return 1
-            print(f"Postbox listening on http://{args.host}:{args.port} (inbox: {args.file})")
             serve(args.port, store, args.host, args.max_body)
             return 0
         finally:

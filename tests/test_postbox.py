@@ -325,6 +325,10 @@ class ServerTests(unittest.TestCase):
         with urllib.request.urlopen(request, timeout=5) as response:
             return response.read().decode()
 
+    def test_url_reports_the_bound_port(self) -> None:
+        self.assertIn(f":{self.port}", self.server.url())
+        self.assertTrue(self.server.url().startswith("http://"))
+
     def test_request_is_captured(self) -> None:
         self._post("/hook", b'{"event": "push"}')
         requests = self.store.all()
