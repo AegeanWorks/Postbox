@@ -10,7 +10,7 @@
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `19`
 - **Total Class Methods**: `174`
-- **Total Source Lines**: `2464`
+- **Total Source Lines**: `2466`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`8` module(s))
@@ -162,7 +162,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `1163` lines
+**Size**: `1165` lines
 
 **Classes:**
 - `class ModelTests`
