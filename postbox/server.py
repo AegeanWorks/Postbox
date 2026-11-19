@@ -105,7 +105,11 @@ class InboxHandler(BaseHTTPRequestHandler):
         return b"".join(chunks)
 
     def _capture(self) -> None:
-        raw_length = self.headers.get("Content-Length")
+        declared = self.headers.get_all("Content-Length")
+        if declared is not None and len(declared) > 1:
+            self._bad_request("conflicting Content-Length headers")
+            return
+        raw_length = declared[0] if declared else None
         try:
             length = int(raw_length) if raw_length is not None else 0
         except (TypeError, ValueError):

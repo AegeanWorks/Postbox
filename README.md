@@ -116,7 +116,8 @@ cannot destroy captures and clients can discover the supported methods.
 Bodies above
 `--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies
 are decoded with the same cumulative size limit; malformed chunk framing gets
-`400`. Malformed or negative `Content-Length` also gets `400`, as does a body
+`400`. Malformed, negative or duplicate `Content-Length` headers also get `400`,
+as does a body
 that is shorter than the declared length; incomplete bodies are never stored.
 A corrupt or non-UTF-8 inbox
 produces a JSON `500` rather than a dropped connection. `serve --max N` keeps only
@@ -160,7 +161,8 @@ and compare against `received_at` in UTC.
 records atomically. Every record must carry an ISO-8601 `received_at` (a trailing
 `Z` is accepted); snapshots with invalid timestamps are refused. It preserves
 captures already in the target inbox and skips
-records whose id is already present, reporting both counts. Unknown versions
+records whose id is already present in the target or duplicated in the snapshot,
+reporting both counts. Unknown versions
 are refused without modifying the file.
 It is a development tool: it binds to `127.0.0.1` by default, has no
 authentication, and is not meant to be exposed to the public internet.

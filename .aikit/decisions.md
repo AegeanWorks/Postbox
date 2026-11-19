@@ -172,3 +172,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed GET /__clear returned 405 without the Allow header required for that status.
 - **Decision**: Send Allow: POST, DELETE on the clear-endpoint 405 by allowing extra headers in the JSON response helper.
 - **Consequences**: The response is RFC-compliant and clients can discover the supported methods; the status and body are unchanged.
+
+### ADR-024: Dedupe within snapshots and reject duplicate Content-Length
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed a snapshot with the same id twice created ambiguous records, and two conflicting Content-Length values were accepted with a truncated body.
+- **Decision**: Track seen ids while importing so duplicates inside a snapshot are skipped, and reject any request carrying more than one Content-Length header with 400.
+- **Consequences**: Imports cannot create unusable ambiguous ids; smuggling-shaped requests are refused before capture.

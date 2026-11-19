@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `18`
-- **Total Class Methods**: `149`
-- **Total Source Lines**: `2114`
+- **Total Class Methods**: `151`
+- **Total Source Lines**: `2144`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `432` lines
+**Size**: `437` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -85,7 +85,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `297` lines
+**Size**: `301` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -152,7 +152,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `927` lines
+**Size**: `948` lines
 
 **Classes:**
 - `class ModelTests`
@@ -208,6 +208,7 @@
   - Method `.test_inbox_pagination_rejects_bad_values()`
   - Method `.test_non_utf8_inbox_returns_json_500()`
   - Method `.test_health_endpoint()`
+  - Method `.test_conflicting_content_length_is_rejected()`
   - Method `.test_malformed_content_length_is_rejected()`
   - Method `.test_negative_content_length_is_rejected()`
   - Method `.test_chunked_body_is_decoded()`
@@ -244,6 +245,7 @@
   - Method `.test_export_import_roundtrip()`
   - Method `.test_export_stdout_is_json()`
   - Method `.test_import_preserves_existing_records()`
+  - Method `.test_import_dedupes_ids_within_snapshot()`
   - Method `.test_import_skips_duplicate_ids()`
   - Method `.test_import_refuses_unknown_version()`
   - Method `.test_import_refuses_bad_timestamp()`

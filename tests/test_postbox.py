@@ -437,6 +437,14 @@ class ServerTests(unittest.TestCase):
             payload = json.loads(response.read())
         self.assertEqual(payload, {"ok": True, "count": 0})
 
+    def test_conflicting_content_length_is_rejected(self) -> None:
+        response = self._raw(
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nContent-Length: 3\r\n"
+            b"Content-Length: 5\r\n\r\nabcde"
+        )
+        self.assertIn(b"400", response)
+        self.assertEqual(self.store.count(), 0)
+
     def test_malformed_content_length_is_rejected(self) -> None:
         response = self._raw(
             b"POST /hook HTTP/1.0\r\nHost: x\r\nContent-Length: abc\r\n\r\n"
@@ -694,6 +702,19 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             [r.id for r in other_store.all()], ["kept", "abc123", "def456", "ghi789"]
         )
+
+    def test_import_dedupes_ids_within_snapshot(self) -> None:
+        snapshot = Path(self.path).parent / "intra-dup.json"
+        record = make_request(id="dup").to_dict()
+        snapshot.write_text(
+            json.dumps(
+                {"format": "postbox-export", "version": 1, "requests": [record, record]}
+            ),
+            encoding="utf-8",
+        )
+        target = Path(self.path).parent / "intra-target.jsonl"
+        self.assertEqual(main(["--file", str(target), "import", str(snapshot)]), 0)
+        self.assertEqual([r.id for r in InboxStore(target).all()], ["dup"])
 
     def test_import_skips_duplicate_ids(self) -> None:
         export_path = Path(self.path).parent / "dupe-snapshot.json"

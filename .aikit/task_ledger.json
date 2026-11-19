@@ -1,12 +1,13 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-allow",
-    "last_phase": "phase 4",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1795088713.7672489,
+    "task_id": "postbox-importcl",
+    "last_phase": "in_progress",
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1795089602.2205038,
     "owner": "opencode:postbox",
+    "lease_until": 1795096802.2205038,
     "started_by": "opencode:postbox",
     "continuations": [],
     "workspaces": [
@@ -14,70 +15,9 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ],
-    "completed_at": 1795088740.9493887,
-    "completed_head": "58fc26bf102c234d8438f0c1fab52363370bc0d1",
-    "completed_tree": "a45f1edb3c325f023e6656c12f611a26369dd1d2"
+    ]
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-jsonout",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/2] Emit machine-readable success objects for clear, import and replay under --json",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795087552.9704041,
-      "timestamp_str": "2026-11-19 14:25:52",
-      "agent": "opencode:postbox",
-      "impact_assessment": {
-        "why": "A probe showed clear and import still print human text with --json, so agents cannot parse mutating-command results.",
-        "benefits": "Every command result is parseable in JSON mode, matching the existing delete and error behaviour.",
-        "risks": "contract: new JSON success shapes, so README and ADR must follow; dependency: none; concurrency: none; state: none.",
-        "mitigation": "Print structured objects only when args.json is true, keep human text unchanged, and add failing-first parse tests."
-      },
-      "plan_digest": "81d040df3dc68942f186ec0ef83786257ce827df3ad09136e420b557f8acccf1",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
-    {
-      "task_id": "postbox-jsonout",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[1/2] Done: clear/import/replay JSON success objects; 94 tests green",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795087714.8866427,
-      "timestamp_str": "2026-11-19 14:28:34",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
-    {
-      "task_id": "postbox-jsonout",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[2/2] Done: README result shapes and ADR-020",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795087792.586547,
-      "timestamp_str": "2026-11-19 14:29:52",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-jsonout",
       "phase": "phase 4",
@@ -403,6 +343,65 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "postbox-importcl",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/3] Dedupe ids within a snapshot and reject duplicate Content-Length headers",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795089200.7822282,
+      "timestamp_str": "2026-11-19 14:53:20",
+      "agent": "opencode:postbox",
+      "impact_assessment": {
+        "why": "A probe showed a snapshot with the same id twice imports both and makes the records unusable, and two conflicting Content-Length values are accepted with a truncated body.",
+        "benefits": "Imports cannot create ambiguous ids, and smuggling-shaped requests are refused.",
+        "risks": "contract: malformed HTTP gets 400 instead of 200, so README and ADR must follow; dependency: none; concurrency: none; state: duplicate ids are skipped before any store write.",
+        "mitigation": "Track seen ids during import, use headers.get_all to detect multiple lengths before reading a body, and add failing-first tests for both."
+      },
+      "plan_digest": "45cbf2c555253a6f427172c921cc9e76a0ef65548984528142418079ea42acac",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-importcl",
+      "phase": "in_progress",
+      "phase_num": 3,
+      "description": "[1/3] Done: intra-snapshot id dedupe and duplicate Content-Length rejection; 99 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795089494.8117166,
+      "timestamp_str": "2026-11-19 14:58:14",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-importcl",
+      "phase": "in_progress",
+      "phase_num": 4,
+      "description": "[2/3] Phase 4 passed: 5/5 gates green, 99 tests; README and ADR-024",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795089602.2205038,
+      "timestamp_str": "2026-11-19 15:00:02",
+      "agent": "opencode:postbox",
+      "checklists": "passed",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
     }
   ]
 }
