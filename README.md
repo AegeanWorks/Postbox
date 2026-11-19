@@ -38,6 +38,10 @@ python -m unittest discover -s tests
 - **Replay one**: `python -m postbox.cli --file inbox.jsonl replay <id> --url http://127.0.0.1:3000/hook`
 - **Clear**: `python -m postbox.cli --file inbox.jsonl clear`
 - **Agent-friendly output**: `python -m postbox.cli --file inbox.jsonl --json list --method POST --path /hook`
+- **Time window**: `python -m postbox.cli --file inbox.jsonl list --after 2026-11-19 --before 2026-11-20`
+- **Portable snapshot**: `python -m postbox.cli --file inbox.jsonl export --output snapshot.json`
+- **Restore snapshot**: `python -m postbox.cli --file other.jsonl import snapshot.json`
+- **Replay to another host with the original route**: `python -m postbox.cli --file inbox.jsonl replay <id> --url http://localhost:3000 --preserve-path`
 
 ## What's Inside
 
@@ -121,8 +125,16 @@ but bodies are still stored verbatim — do not send secrets in request bodies.
 
 Replay strips hop-by-hop headers (`host`, `content-length`, `connection`,
 `transfer-encoding`, `accept-encoding`) and sends the captured body for every
-method, including GET and DELETE. Id prefixes that match more than one request
-are refused rather than silently resolving to the first match.
+method, including GET and DELETE. By default it uses exactly the URL you pass;
+`--preserve-path` instead combines that URL's scheme and host with the captured
+path and query, dropping any query value that was redacted. Id prefixes that
+match more than one request are refused rather than silently resolving to the
+first match. `list --after` and `list --before` accept ISO dates or datetimes
+and compare against `received_at` in UTC.
+
+`export` writes a versioned `postbox-export` JSON envelope to stdout or
+`--output`; `import` validates the format and version before appending the
+records atomically. Unknown versions are refused without modifying the file.
 It is a development tool: it binds to `127.0.0.1` by default, has no
 authentication, and is not meant to be exposed to the public internet.
 

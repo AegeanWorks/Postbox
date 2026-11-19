@@ -175,6 +175,16 @@ class InboxStore:
                 if len(kept) > self.max_requests:
                     self._atomic_write(kept[-self.max_requests :])
 
+    def extend(self, requests: list[CapturedRequest]) -> None:
+        """Append a batch in one atomic write, honouring retention."""
+        with self._lock:
+            self._ensure_file()
+            existing = self._decode(self._read_lines()) if self.max_requests else []
+            combined = existing + list(requests)
+            if self.max_requests is not None and len(combined) > self.max_requests:
+                combined = combined[-self.max_requests :]
+            self._atomic_write(combined)
+
     def all(self) -> list[CapturedRequest]:
         """Return every captured request in arrival order."""
         with self._lock:

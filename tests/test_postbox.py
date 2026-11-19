@@ -34,6 +34,7 @@ def make_request(
     id: str = "abc123",
     headers: tuple[tuple[str, str], ...] | None = None,
     query: str = "",
+    received_at: str = "2026-11-19T00:00:00+00:00",
 ) -> CapturedRequest:
     return CapturedRequest(
         id=id,
@@ -41,7 +42,7 @@ def make_request(
         path=path,
         headers=headers if headers is not None else (("Content-Type", "application/json"),),
         body=body,
-        received_at="2026-11-19T00:00:00+00:00",
+        received_at=received_at,
         query=query,
     )
 
@@ -142,6 +143,15 @@ class StoreTests(unittest.TestCase):
         for index in range(3):
             store.append(make_request(id=f"id{index}"))
         self.assertEqual([r.id for r in store.all()], ["id1", "id2"])
+
+    def test_extend_appends_a_batch(self) -> None:
+        self.store.extend([make_request(id="a"), make_request(id="b")])
+        self.assertEqual([r.id for r in self.store.all()], ["a", "b"])
+
+    def test_extend_honours_retention(self) -> None:
+        store = InboxStore(self.path, max_requests=2)
+        store.extend([make_request(id="a"), make_request(id="b"), make_request(id="c")])
+        self.assertEqual([r.id for r in store.all()], ["b", "c"])
 
     def test_clear_empties_without_temp_files(self) -> None:
         self.store.append(make_request())
@@ -376,7 +386,8 @@ class CliTests(unittest.TestCase):
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        silence = contextlib.redirect_stdout(io.StringIO())
+        self._stdout = io.StringIO()
+        silence = contextlib.redirect_stdout(self._stdout)
         silence.__enter__()
         self.addCleanup(silence.__exit__, None, None, None)
         silence_error = contextlib.redirect_stderr(io.StringIO())
@@ -413,6 +424,68 @@ class CliTests(unittest.TestCase):
     def test_ambiguous_prefix_returns_error(self) -> None:
         self.store.append(make_request(id="abc2"))
         self.assertEqual(main(["--file", str(self.path), "show", "abc"]), 1)
+
+    def test_export_import_roundtrip(self) -> None:
+        export_path = Path(self.path).parent / "export.json"
+        self.assertEqual(
+            main(["--file", str(self.path), "export", "--output", str(export_path)]), 0
+        )
+        imported_path = Path(self.path).parent / "imported.jsonl"
+        self.assertEqual(
+            main(["--file", str(imported_path), "import", str(export_path)]), 0
+        )
+        self.assertEqual(
+            [r.id for r in InboxStore(imported_path).all()], ["abc123", "def456", "ghi789"]
+        )
+
+    def test_export_stdout_is_json(self) -> None:
+        self.assertEqual(main(["--file", str(self.path), "export"]), 0)
+        payload = json.loads(self._stdout.getvalue())
+        self.assertEqual(payload["format"], "postbox-export")
+        self.assertEqual(len(payload["requests"]), 3)
+
+    def test_import_refuses_unknown_version(self) -> None:
+        export_path = Path(self.path).parent / "bad-version.json"
+        export_path.write_text(
+            json.dumps({"format": "postbox-export", "version": 99, "requests": []}),
+            encoding="utf-8",
+        )
+        self.assertEqual(
+            main(["--file", str(self.path), "import", str(export_path)]), 1
+        )
+
+    def test_import_refuses_bad_record(self) -> None:
+        export_path = Path(self.path).parent / "bad-record.json"
+        export_path.write_text(
+            json.dumps(
+                {"format": "postbox-export", "version": 1, "requests": [{"id": "x"}]}
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(
+            main(["--file", str(self.path), "import", str(export_path)]), 1
+        )
+
+    def test_list_filters_by_time(self) -> None:
+        self.store.append(
+            make_request(id="t1", received_at="2026-11-19T10:00:00+00:00")
+        )
+        self.store.append(
+            make_request(id="t2", received_at="2026-11-20T10:00:00+00:00")
+        )
+        self._stdout.seek(0)
+        self._stdout.truncate(0)
+        self.assertEqual(
+            main(["--file", str(self.path), "list", "--after", "2026-11-20"]), 0
+        )
+        output = self._stdout.getvalue()
+        self.assertIn("t2", output)
+        self.assertNotIn("t1", output)
+
+    def test_invalid_time_filter_returns_error(self) -> None:
+        self.assertEqual(
+            main(["--file", str(self.path), "list", "--before", "yesterday"]), 2
+        )
 
     def test_version_flag(self) -> None:
         self.assertEqual(main(["--version"]), 0)
@@ -455,6 +528,43 @@ class CliTests(unittest.TestCase):
             server.shutdown()
             server.server_close()
             thread.join(timeout=2)
+
+    def _replay_target(self, request_id: str, extra: list[str] | None = None) -> CapturedRequest:
+        target_store = InboxStore(Path(self.path).parent / f"target-{request_id}.jsonl")
+        server = InboxServer(("127.0.0.1", 0), target_store)
+        port = server.server_address[1]
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            args = [
+                "--file", str(self.path), "replay", request_id,
+                "--url", f"http://127.0.0.1:{port}/ignored", "--timeout", "3",
+            ]
+            if extra:
+                args.extend(extra)
+            result = main(args)
+            self.assertEqual(result, 0)
+            return target_store.all()[0]
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_replay_preserves_captured_path_and_query(self) -> None:
+        self.store.append(
+            make_request(id="path1", method="GET", path="/original/route", query="a=1&b=2")
+        )
+        replayed = self._replay_target("path1", ["--preserve-path"])
+        self.assertEqual(replayed.path, "/original/route")
+        self.assertEqual(dict(urllib.parse.parse_qsl(replayed.query)), {"a": "1", "b": "2"})
+
+    def test_replay_preserve_path_omits_redacted_query(self) -> None:
+        self.store.append(
+            make_request(id="path2", query="token=%5BREDACTED%5D&page=1")
+        )
+        replayed = self._replay_target("path2", ["--preserve-path"])
+        self.assertNotIn("token", replayed.query)
+        self.assertEqual(dict(urllib.parse.parse_qsl(replayed.query)), {"page": "1"})
 
     def test_replay_does_not_send_redacted_headers(self) -> None:
         self.store.append(

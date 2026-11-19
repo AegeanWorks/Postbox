@@ -5,8 +5,10 @@ from __future__ import annotations
 import argparse
 import ipaddress
 import json
+from datetime import datetime, timezone
 import urllib.parse
 import urllib.request
+from pathlib import Path
 from urllib.error import URLError
 
 from postbox import __version__
@@ -35,6 +37,33 @@ def _positive_int(value: str) -> int:
     if number < 1:
         raise argparse.ArgumentTypeError("must be at least 1")
     return number
+
+
+def _iso_time(value: str) -> datetime:
+    """Parse an ISO date or datetime into an aware UTC datetime."""
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("use an ISO date or datetime") from exc
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _in_time_window(
+    request: CapturedRequest,
+    after: datetime | None,
+    before: datetime | None,
+) -> bool:
+    moment = datetime.fromisoformat(request.received_at.replace("Z", "+00:00"))
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    moment = moment.astimezone(timezone.utc)
+    if after is not None and moment < after:
+        return False
+    if before is not None and moment > before:
+        return False
+    return True
 
 
 def is_loopback(host: str) -> bool:
@@ -89,15 +118,27 @@ def _build_parser() -> argparse.ArgumentParser:
     list_parser.add_argument(
         "--limit", type=_positive_int, default=None, help="show at most N results"
     )
+    list_parser.add_argument("--after", type=_iso_time, default=None, help="ISO time lower bound")
+    list_parser.add_argument("--before", type=_iso_time, default=None, help="ISO time upper bound")
 
     show_parser = sub.add_parser("show", help="show one captured request")
     show_parser.add_argument("id", help="full id or unique prefix")
 
     sub.add_parser("clear", help="empty the inbox")
 
+    export_parser = sub.add_parser("export", help="write a portable JSON snapshot")
+    export_parser.add_argument("--output", default=None, help="write to FILE instead of stdout")
+
+    import_parser = sub.add_parser("import", help="append a JSON snapshot to the inbox")
+    import_parser.add_argument("snapshot", help="snapshot to import")
+
     replay_parser = sub.add_parser("replay", help="send a captured request to a URL")
     replay_parser.add_argument("id", help="full id or unique prefix")
     replay_parser.add_argument("--url", required=True, help="target URL")
+    replay_parser.add_argument(
+        "--preserve-path", action="store_true",
+        help="use the captured path and query with the target host",
+    )
     replay_parser.add_argument(
         "--timeout", type=_non_negative_float, default=10.0, help="timeout in seconds"
     )
@@ -120,13 +161,28 @@ def _find_or_error(store: InboxStore, prefix: str) -> CapturedRequest | None:
     return request
 
 
-def _replay(request: CapturedRequest, url: str, timeout: float) -> int:
+def _replay(
+    request: CapturedRequest, url: str, timeout: float, preserve_path: bool = False
+) -> int:
     try:
         parsed = urllib.parse.urlparse(url)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
             raise ValueError("URL must be an absolute http:// or https:// address")
         if timeout < 0:
             raise ValueError("timeout must be non-negative")
+        target_url = url
+        if preserve_path:
+            pairs = [
+                (name, value)
+                for name, value in urllib.parse.parse_qsl(
+                    request.query, keep_blank_values=True
+                )
+                if value != REDACTED
+            ]
+            query = urllib.parse.urlencode(pairs)
+            target_url = urllib.parse.urlunparse(
+                (parsed.scheme, parsed.netloc, request.path or parsed.path, "", query, "")
+            )
         headers = {
             key: value
             for key, value in request.headers
@@ -135,10 +191,10 @@ def _replay(request: CapturedRequest, url: str, timeout: float) -> int:
             and value != REDACTED
         }
         target = urllib.request.Request(
-            url, data=request.body, headers=headers, method=request.method
+            target_url, data=request.body, headers=headers, method=request.method
         )
         with urllib.request.urlopen(target, timeout=timeout) as response:
-            print(f"{request.method} {url} -> {response.status}")
+            print(f"{request.method} {target_url} -> {response.status}")
             return 0
     except (URLError, OSError, ValueError) as exc:
         print(f"Replay failed: {exc}")
@@ -175,6 +231,10 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
             requests = [r for r in requests if r.method.upper() == args.method.upper()]
         if args.path:
             requests = [r for r in requests if r.path == args.path]
+        if args.after is not None or args.before is not None:
+            requests = [
+                r for r in requests if _in_time_window(r, args.after, args.before)
+            ]
         if args.limit is not None:
             requests = requests[: args.limit]
         if args.json:
@@ -204,11 +264,44 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
         print(f"Cleared {count} captured request(s).")
         return 0
 
+    if args.command == "export":
+        payload = {
+            "format": "postbox-export",
+            "version": 1,
+            "requests": [request.to_dict() for request in store.all()],
+        }
+        text = json.dumps(payload, indent=2, ensure_ascii=False)
+        if args.output:
+            with Path(args.output).open("w", encoding="utf-8") as handle:
+                handle.write(text + "\n")
+        else:
+            print(text)
+        return 0
+
+    if args.command == "import":
+        try:
+            data = json.loads(Path(args.snapshot).read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise CorruptInboxError("snapshot is not valid JSON") from exc
+        if not isinstance(data, dict) or data.get("format") != "postbox-export":
+            raise UnsupportedFormatError("not a postbox-export snapshot")
+        if data.get("version") != 1:
+            raise UnsupportedFormatError(
+                f"snapshot version {data.get('version')!r} is unsupported (this loader reads 1)"
+            )
+        records = data.get("requests")
+        if not isinstance(records, list):
+            raise CorruptInboxError("snapshot requests must be a list")
+        requests = [CapturedRequest.from_dict(record) for record in records]
+        store.extend(requests)
+        print(f"Imported {len(requests)} request(s).")
+        return 0
+
     if args.command == "replay":
         request = _find_or_error(store, args.id)
         if request is None:
             return 1
-        return _replay(request, args.url, args.timeout)
+        return _replay(request, args.url, args.timeout, args.preserve_path)
 
     return 2
 

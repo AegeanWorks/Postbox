@@ -8,9 +8,9 @@
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `7`
 - **Total Classes**: `15`
-- **Total Top-Level Functions**: `14`
-- **Total Class Methods**: `91`
-- **Total Source Lines**: `1363`
+- **Total Top-Level Functions**: `16`
+- **Total Class Methods**: `103`
+- **Total Source Lines**: `1576`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,15 +30,17 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `241` lines
+**Size**: `334` lines
 
 **Functions:**
 - `def _positive_int(value)`
+- `def _iso_time(value)` - *Parse an ISO date or datetime into an aware UTC datetime.*
+- `def _in_time_window(request, after, before)`
 - `def is_loopback(host)` - *Return True for loopback names and addresses only.*
 - `def _non_negative_float(value)`
 - `def _build_parser()`
 - `def _find_or_error(store, prefix)`
-- `def _replay(request, url, timeout)`
+- `def _replay(request, url, timeout, preserve_path)`
 - `def _dispatch(args, store)`
 - `def main(argv)` - *Run the CLI and return an exit code.*
 
@@ -112,7 +114,7 @@
 ### [`postbox/store.py`](postbox/store.py)
 > *Append-only JSONL persistence with atomic writes and a format version.*
 
-**Size**: `198` lines
+**Size**: `208` lines
 
 **Classes:**
 - `class UnsupportedFormatError` - *The inbox uses a format or version this loader cannot read.*
@@ -126,6 +128,7 @@
   - Method `._decode(lines)` - *Decode record lines, converting any parse failure to one error type.*
   - Method `._atomic_write(requests)` - *Replace the file with a fresh header and exactly ``requests``.*
   - Method `.append(request)` - *Append one request, fsync it, and enforce retention if bounded.*
+  - Method `.extend(requests)` - *Append a batch in one atomic write, honouring retention.*
   - Method `.all()` - *Return every captured request in arrival order.*
   - Method `.find(prefix)` - *Find a request by id prefix, refusing an ambiguous match.*
   - Method `.clear()` - *Empty the inbox with a temp-file + os.replace atomic write.*
@@ -139,7 +142,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `494` lines
+**Size**: `604` lines
 
 **Classes:**
 - `class ModelTests`
@@ -159,6 +162,8 @@
   - Method `.test_find_by_prefix()`
   - Method `.test_ambiguous_prefix_is_refused()`
   - Method `.test_retention_keeps_newest_requests()`
+  - Method `.test_extend_appends_a_batch()`
+  - Method `.test_extend_honours_retention()`
   - Method `.test_clear_empties_without_temp_files()`
   - Method `.test_missing_file_is_empty()`
   - Method `.test_corrupt_line_is_refused()`
@@ -195,16 +200,25 @@
   - Method `.test_show_missing_returns_error()`
   - Method `.test_clear()`
   - Method `.test_ambiguous_prefix_returns_error()`
+  - Method `.test_export_import_roundtrip()`
+  - Method `.test_export_stdout_is_json()`
+  - Method `.test_import_refuses_unknown_version()`
+  - Method `.test_import_refuses_bad_record()`
+  - Method `.test_list_filters_by_time()`
+  - Method `.test_invalid_time_filter_returns_error()`
   - Method `.test_version_flag()`
   - Method `.test_loopback_detection()`
   - Method `.test_non_loopback_host_is_refused()`
   - Method `.test_invalid_numeric_flags_return_error()`
   - Method `.test_bad_replay_url_returns_error()`
   - Method `.test_replay_sends_body_for_delete()`
+  - Method `._replay_target(request_id, extra)`
+  - Method `.test_replay_preserves_captured_path_and_query()`
+  - Method `.test_replay_preserve_path_omits_redacted_query()`
   - Method `.test_replay_does_not_send_redacted_headers()`
   - Method `.test_corrupt_inbox_gets_friendly_error()`
 
 **Functions:**
-- `def make_request(method, path, body, id, headers, query)`
+- `def make_request(method, path, body, id, headers, query, received_at)`
 
 ---

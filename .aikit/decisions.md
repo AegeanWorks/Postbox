@@ -60,3 +60,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: ADR-004 documented a single-writer rule but nothing prevented a second serve process from sharing a file and losing updates during an atomic trim.
 - **Decision**: Hold an OS-level exclusive lock on <file>.lock for the serve process lifetime (msvcrt on Windows, flock elsewhere); a second serve exits 1 with a Why/Fix message.
 - **Consequences**: The documented limit is now enforced. The OS releases the lock on process death, so no stale-lock recovery is needed; read commands remain available.
+
+### ADR-008: Versioned export envelope and opt-in faithful replay
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: The inbox was portable only by copying raw JSONL, and replay discarded the captured path and query, so it could not reproduce the original endpoint.
+- **Decision**: Export a versioned postbox-export JSON envelope with refuse-on-unknown import, and add an opt-in --preserve-path replay flag that uses the captured route while dropping redacted query values.
+- **Consequences**: Snapshots can evolve safely and replays can target another host without losing the original route; default replay behaviour is unchanged.
