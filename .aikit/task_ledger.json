@@ -1,11 +1,11 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-time",
+    "task_id": "postbox-disconnect",
     "last_phase": "phase 4",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1795067940.8104672,
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1795068405.1276414,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
     "continuations": [],
@@ -14,84 +14,9 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ],
-    "completed_at": 1795067966.9432545,
-    "completed_head": "b77e53e52b0e20b83237f4e5030f9e828c4d7c39",
-    "completed_tree": "22ec8d62ba7af9c6a639b040ae1212ecfb483d10"
+    ]
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-extend",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[1/4] Done: extend() now always reads existing records; import into a non-empty inbox preserves prior captures; 69 tests green",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795066739.2207203,
-      "timestamp_str": "2026-11-19 08:38:59",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
-    {
-      "task_id": "postbox-extend",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[2/4] Done: import skips duplicate ids and reports Imported/skipped counts; 70 tests green",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795066801.7558174,
-      "timestamp_str": "2026-11-19 08:40:01",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
-    {
-      "task_id": "postbox-extend",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[3/4] Done: README import semantics, ADR-010",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795066849.7758904,
-      "timestamp_str": "2026-11-19 08:40:49",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
-    {
-      "task_id": "postbox-extend",
-      "phase": "phase 4",
-      "phase_num": 4,
-      "description": "[4/4] Phase 4 passed: 5/5 gates green, 70 tests",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795066850.5496602,
-      "timestamp_str": "2026-11-19 08:40:50",
-      "agent": "opencode:postbox",
-      "checklists": "passed",
-      "handoff": {
-        "next": "commit, complete, strict check"
-      },
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-extend",
       "phase": "completed",
@@ -396,6 +321,85 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "postbox-disconnect",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "[1/2] Ignore OS-level client disconnects when writing HTTP responses",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795068259.6870694,
+      "timestamp_str": "2026-11-19 09:04:19",
+      "agent": "opencode:postbox",
+      "impact_assessment": {
+        "why": "A probe showed a normal client disconnect before reading the response produces a full ConnectionAbortedError traceback while the capture itself succeeds.",
+        "benefits": "Clean operator console; no confusing stack traces for routine disconnects.",
+        "risks": "contract: none, the HTTP status is unchanged; dependency: none; concurrency: per-thread write path only; state: capture is persisted before the response is written.",
+        "mitigation": "Catch OSError around wfile.write with a documented hygiene allowance, and use a mocked wfile failing-first test."
+      },
+      "plan_digest": "59f3ba57e7914f603868790f356554d4aa34c62b2d42f3b74d32072f7070bf81",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-disconnect",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[1/2] Done: response writes tolerate client disconnect; 80 tests green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795068327.2370675,
+      "timestamp_str": "2026-11-19 09:05:27",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-disconnect",
+      "phase": "phase 3",
+      "phase_num": 3,
+      "description": "[2/2] Done: README note and ADR-014; hygiene marker placement corrected",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795068404.3538387,
+      "timestamp_str": "2026-11-19 09:06:44",
+      "agent": "opencode:postbox",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "postbox-disconnect",
+      "phase": "phase 4",
+      "phase_num": 4,
+      "description": "[2/2] Phase 4 passed: 5/5 gates green, 80 tests",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795068405.1276414,
+      "timestamp_str": "2026-11-19 09:06:45",
+      "agent": "opencode:postbox",
+      "checklists": "passed",
+      "handoff": {
+        "next": "commit, complete, strict check"
+      },
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
     }
   ]
 }

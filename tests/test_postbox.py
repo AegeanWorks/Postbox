@@ -474,6 +474,20 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.store.count(), 0)
 
 
+class ResponseWriteTests(unittest.TestCase):
+    def test_send_json_tolerates_client_disconnect(self) -> None:
+        from postbox.server import InboxHandler
+
+        handler = object.__new__(InboxHandler)
+        handler.command = "GET"
+        handler.wfile = mock.Mock()
+        handler.wfile.write.side_effect = OSError("client gone")
+        handler.send_response = mock.Mock()
+        handler.send_header = mock.Mock()
+        handler.end_headers = mock.Mock()
+        handler._send_json({"ok": True})
+
+
 class CliTests(unittest.TestCase):
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()

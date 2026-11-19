@@ -7,10 +7,10 @@
 
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `7`
-- **Total Classes**: `15`
+- **Total Classes**: `16`
 - **Total Top-Level Functions**: `16`
-- **Total Class Methods**: `130`
-- **Total Source Lines**: `1817`
+- **Total Class Methods**: `131`
+- **Total Source Lines**: `1835`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -83,7 +83,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `268` lines
+**Size**: `272` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -149,7 +149,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `749` lines
+**Size**: `763` lines
 
 **Classes:**
 - `class ModelTests`
@@ -212,6 +212,8 @@
   - Method `.test_head_and_options_are_captured()`
   - Method `.test_secrets_are_redacted_on_capture()`
   - Method `.test_oversized_body_is_rejected()`
+- `class ResponseWriteTests`
+  - Method `.test_send_json_tolerates_client_disconnect()`
 - `class CliTests`
   - Method `.setUp()`
   - Method `.test_list_and_show()`

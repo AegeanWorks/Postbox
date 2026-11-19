@@ -48,7 +48,11 @@ class InboxHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         if self.command != "HEAD":
-            self.wfile.write(body)
+            try:
+                self.wfile.write(body)
+            # hygiene: allow a client may disconnect before reading; that is not a server error
+            except OSError:
+                pass
 
     def _inbox_error(self, exc: Exception) -> None:
         """Report a store failure as JSON instead of dropping the connection."""

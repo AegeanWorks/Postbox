@@ -102,3 +102,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A record with received_at='not-a-timestamp' could be stored or imported, after which a single such record made every time-filtered list fail with a misleading file/permissions error.
 - **Decision**: Parse received_at as ISO-8601 in CapturedRequest.__post_init__, accepting a trailing Z, and raise CorruptInboxError otherwise.
 - **Consequences**: Bad snapshots are refused at import and corrupt records cannot enter the inbox; time filtering is guaranteed to parse every stored record.
+
+### ADR-014: Treat client disconnect as a normal response-write outcome
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed a routine client disconnect before reading the response produced a full ConnectionAbortedError traceback from _send_json, even though the capture succeeded.
+- **Decision**: Ignore OS-level OSError when writing the response body; the record is already persisted and no retry is meaningful once the client is gone.
+- **Consequences**: Operator logs stay clean under normal client churn; a genuine store failure is still reported as JSON 500 because it happens before the response write.
