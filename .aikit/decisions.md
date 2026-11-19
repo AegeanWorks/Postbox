@@ -221,3 +221,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed main() printed prose for corrupt/unsupported/OS errors even under --json, and a filtered-empty list claimed the inbox itself was empty.
 - **Decision**: Emit error objects for those top-level exceptions in JSON mode and distinguish an empty inbox from a filter with no matches.
 - **Consequences**: All CLI output is parseable under --json, and empty-list messages accurately describe the result.
+
+### ADR-031: Drain clear bodies fully and validate chunked framing
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed a complete 16 MiB + 1 clear body was rejected as incomplete, and malformed chunked clear destroyed the inbox while capture rejected the same input.
+- **Decision**: Drain declared bodies in bounded chunks until complete and validate chunked bodies with the shared decoder before clearing.
+- **Consequences**: Large legitimate clears succeed, malformed framing gets 400 without data loss, and clear now shares capture's framing rules.

@@ -558,6 +558,25 @@ class ServerTests(unittest.TestCase):
         self.assertIn(b"400", response)
         self.assertEqual(self.store.count(), 1)
 
+    def test_clear_accepts_complete_body_over_16mib(self) -> None:
+        self._post("/hook", b"data")
+        size = 16 * 1024 * 1024 + 1
+        payload = (
+            b"POST /__clear HTTP/1.0\r\nHost: x\r\nContent-Length: "
+            + str(size).encode() + b"\r\n\r\n" + b"Z" * size
+        )
+        self.assertIn(b"200", self._raw(payload))
+        self.assertEqual(self.store.count(), 0)
+
+    def test_clear_rejects_malformed_chunked_body(self) -> None:
+        self._post("/hook", b"data")
+        payload = (
+            b"POST /__clear HTTP/1.0\r\nHost: x\r\nTransfer-Encoding: chunked\r\n\r\n"
+            b"zz\r\ndata\r\n0\r\n\r\n"
+        )
+        self.assertIn(b"400", self._raw(payload))
+        self.assertEqual(self.store.count(), 1)
+
     def test_clear_rejects_truncated_body(self) -> None:
         self._post("/hook", b"data")
         with socket.create_connection(("127.0.0.1", self.port), timeout=5) as sock:

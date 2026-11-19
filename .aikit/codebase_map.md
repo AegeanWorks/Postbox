@@ -9,8 +9,8 @@
 - **Total Python Modules**: `8`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `19`
-- **Total Class Methods**: `168`
-- **Total Source Lines**: `2392`
+- **Total Class Methods**: `171`
+- **Total Source Lines**: `2428`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`8` module(s))
@@ -93,7 +93,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `318` lines
+**Size**: `335` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -104,8 +104,9 @@
   - Method `._send_json(payload, status, extra_headers)`
   - Method `._inbox_error(exc)` - *Report a store failure as JSON instead of dropping the connection.*
   - Method `._bad_request(reason)`
-  - Method `._read_chunked_body()` - *Decode a chunked body with bounded reads and a cumulative size cap.*
+  - Method `._read_chunked_body(limit)` - *Decode a chunked body with bounded reads and an optional size cap.*
   - Method `._capture()`
+  - Method `._drain_body()` - *Consume and validate a request body; return False if a 400 was sent.*
   - Method `._clear()`
   - Method `._paged_inbox(query)`
   - Method `._route()`
@@ -160,7 +161,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `1127` lines
+**Size**: `1146` lines
 
 **Classes:**
 - `class ModelTests`
@@ -229,6 +230,8 @@
   - Method `.test_malformed_chunk_size_is_rejected()`
   - Method `.test_get_clear_is_a_noop()`
   - Method `.test_clear_with_malformed_content_length_is_rejected()`
+  - Method `.test_clear_accepts_complete_body_over_16mib()`
+  - Method `.test_clear_rejects_malformed_chunked_body()`
   - Method `.test_clear_rejects_truncated_body()`
   - Method `.test_clear_with_negative_content_length_is_rejected()`
   - Method `.test_clear_405_advertises_allowed_methods()`

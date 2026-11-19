@@ -74,8 +74,8 @@ class InboxHandler(BaseHTTPRequestHandler):
     def _bad_request(self, reason: str) -> None:
         self._send_json({"error": reason}, 400)
 
-    def _read_chunked_body(self) -> bytes:
-        """Decode a chunked body with bounded reads and a cumulative size cap."""
+    def _read_chunked_body(self, limit: int | None = None) -> bytes:
+        """Decode a chunked body with bounded reads and an optional size cap."""
         chunks: list[bytes] = []
         total = 0
         while True:
@@ -95,8 +95,8 @@ class InboxHandler(BaseHTTPRequestHandler):
                         break
                 break
             total += size
-            if total > self.max_body:
-                raise _OversizeChunkedBody("chunked body exceeds max_body")
+            if limit is not None and total > limit:
+                raise _OversizeChunkedBody("chunked body exceeds limit")
             data = self.rfile.read(size)
             if len(data) != size:
                 raise _BadChunkedBody("truncated chunk")
@@ -121,7 +121,7 @@ class InboxHandler(BaseHTTPRequestHandler):
             return
         if "chunked" in self.headers.get("Transfer-Encoding", "").lower():
             try:
-                body = self._read_chunked_body()
+                body = self._read_chunked_body(self.max_body)
             except _BadChunkedBody as exc:
                 self._bad_request(str(exc))
                 return
@@ -160,28 +160,45 @@ class InboxHandler(BaseHTTPRequestHandler):
             return
         self._send_json({"ok": True, "id": request.id})
 
-    def _clear(self) -> None:
-        # A destructive endpoint must apply the same framing checks as capture.
+    def _drain_body(self) -> bool:
+        """Consume and validate a request body; return False if a 400 was sent."""
+        if "chunked" in self.headers.get("Transfer-Encoding", "").lower():
+            try:
+                self._read_chunked_body()  # no storage cap: clear only drains
+            except _BadChunkedBody as exc:
+                self._bad_request(str(exc))
+                return False
+            return True
+
         declared = self.headers.get_all("Content-Length")
         if declared is not None and len(declared) > 1:
             self._bad_request("conflicting Content-Length headers")
-            return
+            return False
         raw_length = declared[0] if declared else None
         try:
             length = int(raw_length) if raw_length is not None else 0
         except (TypeError, ValueError):
             self._bad_request("invalid Content-Length")
-            return
+            return False
         if length < 0:
             self._bad_request("negative Content-Length")
+            return False
+        # Drain in bounded pieces to avoid an early close aborting the client.
+        remaining = length
+        while remaining > 0:
+            chunk = self.rfile.read(min(remaining, 64 * 1024))
+            if not chunk:
+                break
+            remaining -= len(chunk)
+        if remaining:
+            self._bad_request("incomplete request body")
+            return False
+        return True
+
+    def _clear(self) -> None:
+        # A destructive endpoint must apply the same framing checks as capture.
+        if not self._drain_body():
             return
-        # Drain a bounded prefix so the client finishes its write before we
-        # answer; closing early aborts the client's send (WinError 10053).
-        if length > 0:
-            received = self.rfile.read(min(length, 16 * 1024 * 1024))
-            if len(received) < length:
-                self._bad_request("incomplete request body")
-                return
         try:
             self.store.clear()
         except _INBOX_ERRORS as exc:
