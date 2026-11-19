@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-extend",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795066850.5496602,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,26 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795066876.1624548,
+    "completed_head": "4fde76102f41bf64c50f606d6c644de96dd5f434",
+    "completed_tree": "657ec5228dc7c19529ec2bea3e4d07bbf9b4a488"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-transport",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-transport' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795039222.949607,
-      "timestamp_str": "2026-11-19 01:00:22",
-      "agent": "opencode:postbox",
-      "head": "05ff85bc0dd85c538ac9ecf51456b3c05448822e",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-cli",
       "phase": "phase 2",
@@ -389,6 +375,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-extend",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-extend' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795066876.523502,
+      "timestamp_str": "2026-11-19 08:41:16",
+      "agent": "opencode:postbox",
+      "head": "4fde76102f41bf64c50f606d6c644de96dd5f434",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
