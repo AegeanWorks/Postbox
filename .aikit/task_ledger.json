@@ -3,32 +3,18 @@
   "active_task": {
     "task_id": "postbox-ack",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795091018.9915695,
     "owner": "opencode:postbox",
     "lease_until": 1795098218.9915695,
     "started_by": "opencode:postbox",
-    "continuations": []
+    "continuations": [],
+    "completed_at": 1795091057.4652767,
+    "completed_head": "77be2d3a56fc01664e7c449f49a9962fd392f671",
+    "completed_tree": "f9794e9f96bc3eb2467a7f6453e4f5dcd3c24316"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-reserved",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[1/2] Done: non-GET/HEAD requests to /__inbox and /__health are captured; 96 tests green",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795088354.5123065,
-      "timestamp_str": "2026-11-19 14:39:14",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-reserved",
       "phase": "phase 3",
@@ -354,6 +340,23 @@
       "timestamp_str": "2026-11-19 15:23:38",
       "agent": "opencode:postbox",
       "checklists": "passed"
+    },
+    {
+      "task_id": "postbox-ack",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-ack' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795091057.6695473,
+      "timestamp_str": "2026-11-19 15:24:17",
+      "agent": "opencode:postbox",
+      "head": "77be2d3a56fc01664e7c449f49a9962fd392f671",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
