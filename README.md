@@ -120,7 +120,8 @@ are decoded with the same cumulative size limit; malformed chunk framing gets
 as does a body
 that is shorter than the declared length; incomplete bodies are never stored.
 A corrupt or non-UTF-8 inbox
-produces a JSON `500` rather than a dropped connection. `serve --max N` keeps only
+produces a JSON `500` rather than a dropped connection, including on capture:
+an unreadable file is never acknowledged with an id that could not be retrieved. `serve --max N` keeps only
 the newest N requests by rewriting the file atomically.
 
 Only one `serve` process can write a given `--file`: an OS-level lock on
@@ -148,8 +149,9 @@ but bodies are still stored verbatim — do not send secrets in request bodies.
 ## Replay
 
 Replay strips hop-by-hop headers (`host`, `content-length`, `connection`,
-`transfer-encoding`, `accept-encoding`) and sends the captured body for every
-method, including GET and DELETE. By default it uses exactly the URL you pass;
+`transfer-encoding`, `accept-encoding`), then sets `Content-Length` from the
+captured body — including `0` for bodyless requests — and sends that body for
+every method, including GET and DELETE. By default it uses exactly the URL you pass;
 `--preserve-path` instead combines that URL's scheme and host with the captured
 path and query, dropping any query value that was redacted. Repeated headers are
 preserved by sending them individually rather than through a name-keyed header map.

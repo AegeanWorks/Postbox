@@ -6,6 +6,7 @@ import contextlib
 import io
 import json
 import socket
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import tempfile
 import threading
 import unittest
@@ -434,6 +435,29 @@ class ServerTests(unittest.TestCase):
         response = self._raw(b"GET /__inbox?limit=-1 HTTP/1.0\r\nHost: x\r\n\r\n")
         self.assertIn(b"400", response)
 
+    def test_capture_into_unsupported_version_is_refused(self) -> None:
+        self.store.path.write_text(
+            json.dumps({"format": "postbox-inbox", "version": 99}) + "\n",
+            encoding="utf-8",
+        )
+        before = self.store.path.read_bytes()
+        response = self._raw(
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nContent-Length: 4\r\n\r\ndata"
+        )
+        self.assertIn(b"500", response)
+        self.assertEqual(self.store.path.read_bytes(), before)
+
+    def test_capture_into_corrupt_inbox_is_refused(self) -> None:
+        self.store.path.write_text(
+            '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"
+        )
+        before = self.store.path.read_bytes()
+        response = self._raw(
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nContent-Length: 4\r\n\r\ndata"
+        )
+        self.assertIn(b"500", response)
+        self.assertEqual(self.store.path.read_bytes(), before)
+
     def test_non_utf8_inbox_returns_json_500(self) -> None:
         self.store.path.write_bytes(
             b'{"format":"postbox-inbox","version":1}\n{"id":"x","body_b64":"\xff"}\n'
@@ -852,6 +876,40 @@ class CliTests(unittest.TestCase):
             payload = json.loads(self._stdout.getvalue())
             self.assertEqual(payload["status"], 200)
             self.assertEqual(payload["method"], "POST")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_replay_keeps_content_length_zero_for_bodyless_post(self) -> None:
+        self.store.append(
+            make_request(
+                id="nop", method="POST", path="/action",
+                headers=(("Host", "x"), ("Content-Length", "0")), body=b"",
+            )
+        )
+        seen: dict[str, str | None] = {}
+
+        class StrictHandler(BaseHTTPRequestHandler):
+            def do_POST(self) -> None:
+                seen["cl"] = self.headers.get("Content-Length")
+                self.rfile.read(int(seen["cl"] or 0))
+                self.send_response(200 if seen["cl"] is not None else 411)
+                self.end_headers()
+
+            def log_message(self, *args: object) -> None:
+                return
+
+        server = HTTPServer(("127.0.0.1", 0), StrictHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            result = main(
+                ["--file", str(self.path), "replay", "nop", "--url",
+                 f"http://127.0.0.1:{server.server_port}/action", "--timeout", "3"]
+            )
+            self.assertEqual(result, 0)
+            self.assertEqual(seen["cl"], "0")
         finally:
             server.shutdown()
             server.server_close()

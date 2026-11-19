@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `19`
-- **Total Class Methods**: `154`
-- **Total Source Lines**: `2207`
+- **Total Class Methods**: `157`
+- **Total Source Lines**: `2264`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `460` lines
+**Size**: `459` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -153,7 +153,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `983` lines
+**Size**: `1041` lines
 
 **Classes:**
 - `class ModelTests`
@@ -208,6 +208,8 @@
   - Method `.test_non_get_requests_to_read_only_paths_are_captured()`
   - Method `.test_inbox_pagination()`
   - Method `.test_inbox_pagination_rejects_bad_values()`
+  - Method `.test_capture_into_unsupported_version_is_refused()`
+  - Method `.test_capture_into_corrupt_inbox_is_refused()`
   - Method `.test_non_utf8_inbox_returns_json_500()`
   - Method `.test_health_endpoint()`
   - Method `.test_conflicting_content_length_is_rejected()`
@@ -262,6 +264,7 @@
   - Method `.test_replay_error_is_machine_readable_under_json()`
   - Method `.test_bad_replay_url_returns_error()`
   - Method `.test_replay_json_output()`
+  - Method `.test_replay_keeps_content_length_zero_for_bodyless_post()`
   - Method `.test_replay_preserves_duplicate_headers()`
   - Method `.test_replay_sends_body_for_delete()`
   - Method `._replay_target(request_id, extra)`

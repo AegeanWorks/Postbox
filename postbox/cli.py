@@ -262,8 +262,7 @@ def _replay(
         connection.putrequest(request.method, selector, skip_accept_encoding=True)
         for name, value in headers:
             connection.putheader(name, value)
-        if request.body:
-            connection.putheader("Content-Length", str(len(request.body)))
+        connection.putheader("Content-Length", str(len(request.body)))
         connection.endheaders(request.body if request.body else None)
         response = connection.getresponse()
         status = response.status

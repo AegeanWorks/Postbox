@@ -165,7 +165,7 @@ class InboxStore:
             self._ensure_file()
             # Parse before writing: a trim that cannot read the old file must
             # not leave an orphan line behind.
-            records = self._decode(self._read_lines()) if self.max_requests else []
+            records = self._decode(self._read_lines())
             with self.path.open("a", encoding="utf-8") as handle:
                 handle.write(line)
                 handle.flush()
