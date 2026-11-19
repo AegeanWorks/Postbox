@@ -119,6 +119,9 @@ class InboxHandler(BaseHTTPRequestHandler):
             return
         else:
             body = self.rfile.read(length) if length > 0 else b""
+            if len(body) != length:
+                self._bad_request("incomplete request body")
+                return
         path, _, query = self.path.partition("?")
         request = CapturedRequest(
             id=uuid.uuid4().hex[:12],

@@ -401,6 +401,16 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(self.store.count(), 1, method.decode())
             self.store.clear()
 
+    def test_truncated_body_is_rejected(self) -> None:
+        with socket.create_connection(("127.0.0.1", self.port), timeout=5) as sock:
+            sock.settimeout(5)
+            sock.sendall(
+                b"POST /hook HTTP/1.0\r\nHost: x\r\nContent-Length: 50\r\n\r\nabc"
+            )
+            sock.shutdown(socket.SHUT_WR)
+            self.assertIn(b"400", sock.recv(4096))
+        self.assertEqual(self.store.count(), 0)
+
     def test_clear_with_body_does_not_abort_client(self) -> None:
         with socket.create_connection(("127.0.0.1", self.port), timeout=15) as sock:
             sock.settimeout(15)

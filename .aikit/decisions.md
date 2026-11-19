@@ -88,3 +88,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed HEAD/OPTIONS /__clear destroyed captures despite the documented protection, POST /__clear with a body aborted the client, and substring matching made ?filter=limit look like pagination.
 - **Decision**: Allow only POST and DELETE to clear, drain a bounded body prefix before answering, detect pagination by parsed query keys, and treat an explicitly empty --method/--path as a real filter.
 - **Consequences**: Read-only probes are harmless, large clear bodies no longer reset the connection, and endpoint/filter parsing follows the documented contract.
+
+### ADR-012: Reject bodies shorter than Content-Length
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed a client declaring 100 bytes but sending 3 got 200, and the partial body was stored as if complete, corrupting replays and analysis.
+- **Decision**: Compare the received byte count with Content-Length before constructing a record; return 400 and capture nothing on a mismatch.
+- **Consequences**: Every stored body matches its declared length. Clients that close early now get an explicit error instead of a silently truncated capture.

@@ -109,7 +109,9 @@ including HEAD and OPTIONS, returns `405` so a prefetch cannot destroy captures.
 Bodies above
 `--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies
 are decoded with the same cumulative size limit; malformed chunk framing gets
-`400`. Malformed or negative `Content-Length` also gets `400`. A corrupt inbox
+`400`. Malformed or negative `Content-Length` also gets `400`, as does a body
+that is shorter than the declared length; incomplete bodies are never stored.
+A corrupt inbox
 produces a JSON `500` rather than a dropped connection. `serve --max N` keeps only
 the newest N requests by rewriting the file atomically.
 
