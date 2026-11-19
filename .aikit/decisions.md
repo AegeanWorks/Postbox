@@ -193,3 +193,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed a capture into a corrupt or unsupported-version inbox was acknowledged with 200 and an id but could never be read back, and bodyless replay omitted Content-Length so strict targets answered 411.
 - **Decision**: Decode existing records before every append regardless of retention settings, and always send Content-Length in replay based on the captured body.
 - **Consequences**: No capture is acknowledged into an unreadable file; bodyless webhooks replay faithfully. Append now reads the file once per capture, which was already the case with retention enabled.
+
+### ADR-027: Reject non-finite timeouts and validate clear framing
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed --timeout inf crashed with OverflowError, and malformed or negative Content-Length on POST /__clear silently wiped the inbox while capture rejected the same input.
+- **Decision**: Validate --timeout as finite and bounded, catch OverflowError as a backstop, and apply capture's Content-Length checks before any clear.
+- **Consequences**: Invalid timeouts get friendly errors, and a malformed clear cannot destroy captures.

@@ -6,6 +6,7 @@ import argparse
 import http.client
 import ipaddress
 import json
+import math
 import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
@@ -82,6 +83,8 @@ def _non_negative_float(value: str) -> float:
         raise argparse.ArgumentTypeError("must be a number") from exc
     if number < 0:
         raise argparse.ArgumentTypeError("must be non-negative")
+    if not math.isfinite(number) or number > 86400:
+        raise argparse.ArgumentTypeError("must be finite and at most 86400 seconds")
     return number
 
 
@@ -278,7 +281,7 @@ def _replay(
         else:
             print(f"{request.method} {target_url} -> {status}")
         return 0
-    except (http.client.HTTPException, OSError, ValueError) as exc:
+    except (http.client.HTTPException, OSError, ValueError, OverflowError) as exc:
         if json_mode:
             print(json.dumps({"error": "replay_failed", "detail": str(exc)}, ensure_ascii=False))
         else:
@@ -449,7 +452,7 @@ def main(argv: list[str] | None = None) -> int:
         print("Why: a damaged record cannot be decoded without risking a wrong replay.")
         print("Fix: clear the inbox, or restore it from a backup, then retry.")
         return 1
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, OverflowError) as exc:
         print(f"Error: {exc}")
         print("Why: the inbox file or one of its settings is invalid or inaccessible.")
         print("Fix: check --file, its permissions and the numeric options, then retry.")

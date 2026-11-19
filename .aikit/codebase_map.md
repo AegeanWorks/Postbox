@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `19`
-- **Total Class Methods**: `157`
-- **Total Source Lines**: `2264`
+- **Total Class Methods**: `160`
+- **Total Source Lines**: `2299`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `459` lines
+**Size**: `462` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -86,7 +86,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `306` lines
+**Size**: `315` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -153,7 +153,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `1041` lines
+**Size**: `1064` lines
 
 **Classes:**
 - `class ModelTests`
@@ -219,6 +219,8 @@
   - Method `.test_chunked_oversize_body_is_rejected()`
   - Method `.test_malformed_chunk_size_is_rejected()`
   - Method `.test_get_clear_is_a_noop()`
+  - Method `.test_clear_with_malformed_content_length_is_rejected()`
+  - Method `.test_clear_with_negative_content_length_is_rejected()`
   - Method `.test_clear_405_advertises_allowed_methods()`
   - Method `.test_read_only_methods_on_clear_are_noops()`
   - Method `.test_truncated_body_is_rejected()`
@@ -260,6 +262,7 @@
   - Method `.test_loopback_detection()`
   - Method `.test_non_loopback_host_is_refused()`
   - Method `.test_serve_rejects_out_of_range_port()`
+  - Method `.test_replay_rejects_nonfinite_timeout()`
   - Method `.test_invalid_numeric_flags_return_error()`
   - Method `.test_replay_error_is_machine_readable_under_json()`
   - Method `.test_bad_replay_url_returns_error()`

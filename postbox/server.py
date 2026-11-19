@@ -161,13 +161,22 @@ class InboxHandler(BaseHTTPRequestHandler):
         self._send_json({"ok": True, "id": request.id})
 
     def _clear(self) -> None:
-        # Drain a bounded prefix so the client finishes its write before we
-        # answer; closing early aborts the client's send (WinError 10053).
-        raw_length = self.headers.get("Content-Length")
+        # A destructive endpoint must apply the same framing checks as capture.
+        declared = self.headers.get_all("Content-Length")
+        if declared is not None and len(declared) > 1:
+            self._bad_request("conflicting Content-Length headers")
+            return
+        raw_length = declared[0] if declared else None
         try:
             length = int(raw_length) if raw_length is not None else 0
         except (TypeError, ValueError):
-            length = 0
+            self._bad_request("invalid Content-Length")
+            return
+        if length < 0:
+            self._bad_request("negative Content-Length")
+            return
+        # Drain a bounded prefix so the client finishes its write before we
+        # answer; closing early aborts the client's send (WinError 10053).
         if length > 0:
             self.rfile.read(min(length, 16 * 1024 * 1024))
         try:

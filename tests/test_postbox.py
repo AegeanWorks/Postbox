@@ -535,6 +535,22 @@ class ServerTests(unittest.TestCase):
             self.assertTrue(json.loads(result.read())["cleared"])
         self.assertEqual(self.store.count(), 0)
 
+    def test_clear_with_malformed_content_length_is_rejected(self) -> None:
+        self._post("/hook", b"data")
+        response = self._raw(
+            b"POST /__clear HTTP/1.0\r\nHost: x\r\nContent-Length: abc\r\n\r\n"
+        )
+        self.assertIn(b"400", response)
+        self.assertEqual(self.store.count(), 1)
+
+    def test_clear_with_negative_content_length_is_rejected(self) -> None:
+        self._post("/hook", b"data")
+        response = self._raw(
+            b"POST /__clear HTTP/1.0\r\nHost: x\r\nContent-Length: -5\r\n\r\n"
+        )
+        self.assertIn(b"400", response)
+        self.assertEqual(self.store.count(), 1)
+
     def test_clear_405_advertises_allowed_methods(self) -> None:
         response = self._raw(b"GET /__clear HTTP/1.0\r\nHost: x\r\n\r\n").decode("latin-1")
         self.assertIn("Allow: POST, DELETE", response)
@@ -840,6 +856,13 @@ class CliTests(unittest.TestCase):
             main(["--file", str(self.path), "serve", "--port", "99999"]), 2
         )
         self.assertEqual(main(["--file", str(self.path), "serve", "--port", "-1"]), 2)
+
+    def test_replay_rejects_nonfinite_timeout(self) -> None:
+        for value in ("inf", "1e300"):
+            self.assertEqual(
+                main(["--file", str(self.path), "replay", "abc", "--url",
+                      "http://127.0.0.1:9/x", "--timeout", value]), 2
+            )
 
     def test_invalid_numeric_flags_return_error(self) -> None:
         self.assertEqual(main(["--file", str(self.path), "serve", "--max", "0"]), 2)

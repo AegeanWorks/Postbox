@@ -43,6 +43,7 @@ python -m unittest discover -s tests
 - **Agent errors**: with `--json`, a missing or ambiguous id prints `{"error": "not_found"|"ambiguous_id", "prefix": ...}`
 - **Agent results**: with `--json`, `clear`/`import`/`delete`/`replay` print `{"cleared": N}`, `{"imported": N, "skipped": M}`, `{"deleted": "id"}` or `{"method": ..., "url": ..., "status": ...}`
 - **Replay failures**: with `--json`, a failed replay prints `{"error": "replay_failed", "detail": ...}`
+- **Timeouts**: `--timeout` must be finite, non-negative and at most 86400 seconds
 - **Time window**: `python -m postbox.cli --file inbox.jsonl list --after 2026-11-19 --before 2026-11-20`
 - **Portable snapshot**: `python -m postbox.cli --file inbox.jsonl export --output snapshot.json`
 - **Restore snapshot**: `python -m postbox.cli --file other.jsonl import snapshot.json`
@@ -112,7 +113,9 @@ the original bare JSON array.
 
 Only `POST /__clear` and `DELETE /__clear` clear the inbox; every other method,
 including HEAD and OPTIONS, returns `405` with `Allow: POST, DELETE` so a prefetch
-cannot destroy captures and clients can discover the supported methods.
+cannot destroy captures and clients can discover the supported methods. The same
+`Content-Length` validation as capture applies to clear, so malformed framing gets
+`400` before anything is removed.
 Bodies above
 `--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies
 are decoded with the same cumulative size limit; malformed chunk framing gets
