@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-time",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795067940.8104672,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,33 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795067966.9432545,
+    "completed_head": "b77e53e52b0e20b83237f4e5030f9e828c4d7c39",
+    "completed_tree": "22ec8d62ba7af9c6a639b040ae1212ecfb483d10"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-extend",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/4] Fix InboxStore.extend data loss when no retention cap is set",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795066653.62766,
-      "timestamp_str": "2026-11-19 08:37:33",
-      "agent": "opencode:postbox",
-      "impact_assessment": {
-        "why": "A probe showed extend() into a non-empty inbox replaces all existing records, so importing a snapshot silently destroys prior captures.",
-        "benefits": "Batch appends and imports preserve existing state; no data loss.",
-        "risks": "contract: none, this restores intended behaviour; dependency: none; concurrency: decode and rewrite stay under the existing lock; state: a corrupt inbox still fails before any write.",
-        "mitigation": "Always decode existing records inside extend(), keep trimming only when max_requests is set, and add failing-first tests for extend and import into non-empty inboxes."
-      },
-      "plan_digest": "44b28aa627088b7b76b40878c734d117496ce71df7ab4e6701893997a6856dd1",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-extend",
       "phase": "phase 3",
@@ -400,6 +379,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-time",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-time' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795067967.1573746,
+      "timestamp_str": "2026-11-19 08:59:27",
+      "agent": "opencode:postbox",
+      "head": "b77e53e52b0e20b83237f4e5030f9e828c4d7c39",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
