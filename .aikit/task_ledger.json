@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-surface",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795066507.9878564,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,26 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795066532.5508246,
+    "completed_head": "e3e24c7119ee540999221db9acc7529c3fde72f9",
+    "completed_tree": "ec21c076da9169ca3492d02d592122eee0793273"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-ledger-tree",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-ledger-tree' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795038481.2178197,
-      "timestamp_str": "2026-11-19 00:48:01",
-      "agent": "opencode:postbox",
-      "head": "f178aab7b71d079aab1668dbfa6b37004f489a8b",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-transport",
       "phase": "phase 2",
@@ -390,6 +376,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-surface",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-surface' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795066532.6576576,
+      "timestamp_str": "2026-11-19 08:35:32",
+      "agent": "opencode:postbox",
+      "head": "e3e24c7119ee540999221db9acc7529c3fde72f9",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
