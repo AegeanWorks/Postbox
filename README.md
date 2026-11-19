@@ -63,6 +63,7 @@ postbox/
 │   ├── task_ledger.json      <- delivery ledger
 │   ├── task_ledger_archive.jsonl <- archived checkpoints
 │   ├── media.json            <- reviewed brand media state
+│   ├── reforge.json          <- active Reforge audit run state
 │   └── codebase_map.md       <- generated AST symbol catalog
 ├── .github/                  <- project-local CI
 │   └── workflows/            <- workflow definitions

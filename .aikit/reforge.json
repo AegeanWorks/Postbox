@@ -1,0 +1,332 @@
+{
+  "schema": 2,
+  "next_run_id": 2,
+  "active_run": "run-1",
+  "last_run": "run-1",
+  "runs": [
+    {
+      "id": "run-1",
+      "start": 3,
+      "step": 3,
+      "stop": null,
+      "stage": 1,
+      "window": 3,
+      "audited_commits": [
+        "40826a7cced5929953fd442ffa9be54715ba3e8c",
+        "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+        "34083f62c4c829d0fc974e0d43ee0b4d815623b1"
+      ],
+      "status": "active",
+      "created": "2026-11-19T19:11:06",
+      "updated": "2026-11-19T19:13:13",
+      "last_audit": {
+        "run": "run-1",
+        "stage": 1,
+        "window": 3,
+        "commits": [
+          "40826a7cced5929953fd442ffa9be54715ba3e8c",
+          "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+          "34083f62c4c829d0fc974e0d43ee0b4d815623b1"
+        ],
+        "new_commits": [
+          "40826a7cced5929953fd442ffa9be54715ba3e8c",
+          "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+          "34083f62c4c829d0fc974e0d43ee0b4d815623b1"
+        ],
+        "prior_commits": [],
+        "findings": [
+          {
+            "code": "review-assert-inbox-survives-huge-chunk",
+            "category": "improvement",
+            "severity": "low",
+            "path": "tests/test_postbox.py",
+            "line": 216,
+            "message": "The new huge-chunk-size clear test checks only for a 400 status, so an implementation that rejected the request but still cleared the inbox would pass; assert the captured record survives.",
+            "evidence": "self.assertIn(b\"400\", response)",
+            "commit": "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+            "hunk": "bca534ed010b:tests/test_postbox.py#1",
+            "symbol": "",
+            "introduced": true,
+            "reproducible": false,
+            "fixable": true,
+            "interaction": "",
+            "repaired": false,
+            "source": "review",
+            "patch_old": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n\n    def test_chunked_body_is_decoded(self) -> None:",
+            "patch_new": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n        self.assertEqual(self.store.count(), 1)\n\n    def test_chunked_body_is_decoded(self) -> None:"
+          }
+        ],
+        "repairs": [],
+        "counts": {
+          "improvement": 1
+        },
+        "reviewed": 5,
+        "review": {
+          "status": "reviewed",
+          "rejected": [],
+          "files": [
+            ".aikit/codebase_map.md",
+            ".aikit/decisions.md",
+            "README.md",
+            "postbox/server.py",
+            "tests/test_postbox.py"
+          ],
+          "packet": ".aikit/reforge.reviews/stage-run-1-1-40826a7cced5.md",
+          "redacted": 0,
+          "coverage": {
+            "reported": 11,
+            "total": 11,
+            "carried": [],
+            "missing": [],
+            "unknown": [],
+            "invalid": []
+          },
+          "findings": [
+            {
+              "code": "review-assert-inbox-survives-huge-chunk",
+              "category": "improvement",
+              "severity": "low",
+              "path": "tests/test_postbox.py",
+              "line": 216,
+              "message": "The new huge-chunk-size clear test checks only for a 400 status, so an implementation that rejected the request but still cleared the inbox would pass; assert the captured record survives.",
+              "evidence": "self.assertIn(b\"400\", response)",
+              "commit": "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+              "hunk": "bca534ed010b:tests/test_postbox.py#1",
+              "symbol": "",
+              "introduced": true,
+              "reproducible": false,
+              "fixable": true,
+              "interaction": "",
+              "repaired": false,
+              "source": "review",
+              "patch_old": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n\n    def test_chunked_body_is_decoded(self) -> None:",
+              "patch_new": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n        self.assertEqual(self.store.count(), 1)\n\n    def test_chunked_body_is_decoded(self) -> None:"
+            }
+          ],
+          "attestations": []
+        },
+        "skipped": [],
+        "tests": {},
+        "gates": {},
+        "delivery": {
+          "commit": "",
+          "short": "",
+          "pushed": false,
+          "push_error": null,
+          "empty": true,
+          "timestamp": "2026-11-19T19:11:21"
+        },
+        "timestamp": "2026-11-19T19:11:21"
+      },
+      "history": [
+        {
+          "run": "run-1",
+          "stage": 1,
+          "window": 3,
+          "commits": [
+            "40826a7cced5929953fd442ffa9be54715ba3e8c",
+            "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+            "34083f62c4c829d0fc974e0d43ee0b4d815623b1"
+          ],
+          "new_commits": [
+            "40826a7cced5929953fd442ffa9be54715ba3e8c",
+            "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+            "34083f62c4c829d0fc974e0d43ee0b4d815623b1"
+          ],
+          "prior_commits": [],
+          "findings": [
+            {
+              "code": "review-assert-inbox-survives-huge-chunk",
+              "category": "improvement",
+              "severity": "low",
+              "path": "tests/test_postbox.py",
+              "line": 216,
+              "message": "The new huge-chunk-size clear test checks only for a 400 status, so an implementation that rejected the request but still cleared the inbox would pass; assert the captured record survives.",
+              "evidence": "self.assertIn(b\"400\", response)",
+              "commit": "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+              "hunk": "bca534ed010b:tests/test_postbox.py#1",
+              "symbol": "",
+              "introduced": true,
+              "reproducible": false,
+              "fixable": true,
+              "interaction": "",
+              "repaired": false,
+              "source": "review",
+              "patch_old": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n\n    def test_chunked_body_is_decoded(self) -> None:",
+              "patch_new": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n        self.assertEqual(self.store.count(), 1)\n\n    def test_chunked_body_is_decoded(self) -> None:"
+            }
+          ],
+          "repairs": [],
+          "counts": {
+            "improvement": 1
+          },
+          "reviewed": 5,
+          "review": {
+            "status": "reviewed",
+            "rejected": [],
+            "files": [
+              ".aikit/codebase_map.md",
+              ".aikit/decisions.md",
+              "README.md",
+              "postbox/server.py",
+              "tests/test_postbox.py"
+            ],
+            "packet": ".aikit/reforge.reviews/stage-run-1-1-40826a7cced5.md",
+            "redacted": 0,
+            "coverage": {
+              "reported": 11,
+              "total": 11,
+              "carried": [],
+              "missing": [],
+              "unknown": [],
+              "invalid": []
+            },
+            "findings": [
+              {
+                "code": "review-assert-inbox-survives-huge-chunk",
+                "category": "improvement",
+                "severity": "low",
+                "path": "tests/test_postbox.py",
+                "line": 216,
+                "message": "The new huge-chunk-size clear test checks only for a 400 status, so an implementation that rejected the request but still cleared the inbox would pass; assert the captured record survives.",
+                "evidence": "self.assertIn(b\"400\", response)",
+                "commit": "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+                "hunk": "bca534ed010b:tests/test_postbox.py#1",
+                "symbol": "",
+                "introduced": true,
+                "reproducible": false,
+                "fixable": true,
+                "interaction": "",
+                "repaired": false,
+                "source": "review",
+                "patch_old": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n\n    def test_chunked_body_is_decoded(self) -> None:",
+                "patch_new": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n        self.assertEqual(self.store.count(), 1)\n\n    def test_chunked_body_is_decoded(self) -> None:"
+              }
+            ],
+            "attestations": []
+          },
+          "skipped": [],
+          "tests": {},
+          "gates": {},
+          "delivery": {
+            "commit": "",
+            "short": "",
+            "pushed": false,
+            "push_error": null,
+            "empty": true,
+            "timestamp": "2026-11-19T19:11:21"
+          },
+          "timestamp": "2026-11-19T19:11:21"
+        }
+      ],
+      "total_commits": 63
+    }
+  ],
+  "stage": 1,
+  "window": 3,
+  "audited_commits": [
+    "40826a7cced5929953fd442ffa9be54715ba3e8c",
+    "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+    "34083f62c4c829d0fc974e0d43ee0b4d815623b1"
+  ],
+  "last_audit": {
+    "run": "run-1",
+    "stage": 1,
+    "window": 3,
+    "commits": [
+      "40826a7cced5929953fd442ffa9be54715ba3e8c",
+      "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+      "34083f62c4c829d0fc974e0d43ee0b4d815623b1"
+    ],
+    "new_commits": [
+      "40826a7cced5929953fd442ffa9be54715ba3e8c",
+      "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+      "34083f62c4c829d0fc974e0d43ee0b4d815623b1"
+    ],
+    "prior_commits": [],
+    "findings": [
+      {
+        "code": "review-assert-inbox-survives-huge-chunk",
+        "category": "improvement",
+        "severity": "low",
+        "path": "tests/test_postbox.py",
+        "line": 216,
+        "message": "The new huge-chunk-size clear test checks only for a 400 status, so an implementation that rejected the request but still cleared the inbox would pass; assert the captured record survives.",
+        "evidence": "self.assertIn(b\"400\", response)",
+        "commit": "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+        "hunk": "bca534ed010b:tests/test_postbox.py#1",
+        "symbol": "",
+        "introduced": true,
+        "reproducible": false,
+        "fixable": true,
+        "interaction": "",
+        "repaired": false,
+        "source": "review",
+        "patch_old": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n\n    def test_chunked_body_is_decoded(self) -> None:",
+        "patch_new": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n        self.assertEqual(self.store.count(), 1)\n\n    def test_chunked_body_is_decoded(self) -> None:"
+      }
+    ],
+    "repairs": [],
+    "counts": {
+      "improvement": 1
+    },
+    "reviewed": 5,
+    "review": {
+      "status": "reviewed",
+      "rejected": [],
+      "files": [
+        ".aikit/codebase_map.md",
+        ".aikit/decisions.md",
+        "README.md",
+        "postbox/server.py",
+        "tests/test_postbox.py"
+      ],
+      "packet": ".aikit/reforge.reviews/stage-run-1-1-40826a7cced5.md",
+      "redacted": 0,
+      "coverage": {
+        "reported": 11,
+        "total": 11,
+        "carried": [],
+        "missing": [],
+        "unknown": [],
+        "invalid": []
+      },
+      "findings": [
+        {
+          "code": "review-assert-inbox-survives-huge-chunk",
+          "category": "improvement",
+          "severity": "low",
+          "path": "tests/test_postbox.py",
+          "line": 216,
+          "message": "The new huge-chunk-size clear test checks only for a 400 status, so an implementation that rejected the request but still cleared the inbox would pass; assert the captured record survives.",
+          "evidence": "self.assertIn(b\"400\", response)",
+          "commit": "bca534ed010b30a899c6b8e6d1292d74553d8f97",
+          "hunk": "bca534ed010b:tests/test_postbox.py#1",
+          "symbol": "",
+          "introduced": true,
+          "reproducible": false,
+          "fixable": true,
+          "interaction": "",
+          "repaired": false,
+          "source": "review",
+          "patch_old": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n\n    def test_chunked_body_is_decoded(self) -> None:",
+          "patch_new": "        response = self._raw(payload)\n        self.assertIn(b\"400\", response)\n        self.assertEqual(self.store.count(), 1)\n\n    def test_chunked_body_is_decoded(self) -> None:"
+        }
+      ],
+      "attestations": []
+    },
+    "skipped": [],
+    "tests": {},
+    "gates": {},
+    "delivery": {
+      "commit": "",
+      "short": "",
+      "pushed": false,
+      "push_error": null,
+      "empty": true,
+      "timestamp": "2026-11-19T19:11:21"
+    },
+    "timestamp": "2026-11-19T19:11:21"
+  },
+  "history": []
+}

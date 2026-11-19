@@ -17,47 +17,6 @@
   "checkpoints": [
     {
       "task_id": "postbox-entryclear",
-      "phase": "in_progress",
-      "phase_num": 2,
-      "description": "[1/5] Working python -m entry point and safe clear on truncated bodies and corrupt inboxes",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795092184.9715786,
-      "timestamp_str": "2026-11-19 15:43:04",
-      "agent": "opencode:postbox",
-      "impact_assessment": {
-        "why": "A probe showed the documented python -m postbox.cli command is a silent no-op, a truncated clear body wipes the inbox, and CLI clear refuses the corrupt file it is meant to fix.",
-        "benefits": "Documented commands work, malformed clear requests are refused, and a corrupt inbox can be cleared from the CLI.",
-        "risks": "contract: added entry point and null count in JSON output, so README and ADR must follow; dependency: none; concurrency: none; state: a rejected clear leaves the file untouched.",
-        "mitigation": "Add __main__.py, check the drained byte count before clearing, skip counting on corrupt files, and add failing-first tests for all three."
-      },
-      "plan_digest": "a994bdaeaee45a22559ed11e01dab88d25da031c86153a2814c641cf485addcd"
-    },
-    {
-      "task_id": "postbox-entryclear",
-      "phase": "in_progress",
-      "phase_num": 3,
-      "description": "[1/5] Implemented entry point, clear body integrity and corrupt-inbox clear",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795092433.8636684,
-      "timestamp_str": "2026-11-19 15:47:13",
-      "agent": "opencode:postbox"
-    },
-    {
-      "task_id": "postbox-entryclear",
-      "phase": "in_progress",
-      "phase_num": 4,
-      "description": "[5/5] Phase 4 passed: 5/5 gates green, docs and ADR-028",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795092513.147985,
-      "timestamp_str": "2026-11-19 15:48:33",
-      "agent": "opencode:postbox",
-      "checklists": "passed"
-    },
-    {
-      "task_id": "postbox-entryclear",
       "phase": "completed",
       "phase_num": 5,
       "description": "Task 'postbox-entryclear' completed successfully.",
@@ -304,6 +263,42 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge run",
+      "phase_num": 3,
+      "description": "run started (start=3, step=3, stop=None)",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795104666.5403147,
+      "timestamp_str": "2026-11-19 19:11:06",
+      "agent": "opencode",
+      "operator_task": "postbox-chunkext"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 1",
+      "phase_num": 3,
+      "description": "Reforge stage 1: window 3, 3 commit(s), 5 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795104681.6081357,
+      "timestamp_str": "2026-11-19 19:11:21",
+      "agent": "opencode",
+      "operator_task": "postbox-chunkext"
+    },
+    {
+      "task_id": "reforge:run-1",
+      "phase": "reforge stage 1",
+      "phase_num": 3,
+      "description": "Reforge stage 1: stage 1 host review reviewed; run active; coverage 11/11",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795104793.1456869,
+      "timestamp_str": "2026-11-19 19:13:13",
+      "agent": "opencode",
+      "operator_task": "postbox-chunkext"
     }
   ]
 }
