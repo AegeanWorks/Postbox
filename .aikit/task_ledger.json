@@ -3,32 +3,18 @@
   "active_task": {
     "task_id": "postbox-jsonerrors",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795093998.9734051,
     "owner": "opencode:postbox",
     "lease_until": 1795101198.9734051,
     "started_by": "opencode:postbox",
-    "continuations": []
+    "continuations": [],
+    "completed_at": 1795094016.4343867,
+    "completed_head": "694f5e6965f9b7b629f7517cfe4e9aa3d1381324",
+    "completed_tree": "4f0caf684698eae72964ebe86410828143c38d6d"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-hostheaders",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-hostheaders' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795090328.5823622,
-      "timestamp_str": "2026-11-19 15:12:08",
-      "agent": "opencode:postbox",
-      "head": "6140bb09a43ab8911e0fe3088fa425dfd4936bad",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-ack",
       "phase": "in_progress",
@@ -301,6 +287,23 @@
       "timestamp_str": "2026-11-19 16:13:18",
       "agent": "opencode:postbox",
       "checklists": "passed"
+    },
+    {
+      "task_id": "postbox-jsonerrors",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-jsonerrors' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795094016.4980187,
+      "timestamp_str": "2026-11-19 16:13:36",
+      "agent": "opencode:postbox",
+      "head": "694f5e6965f9b7b629f7517cfe4e9aa3d1381324",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
