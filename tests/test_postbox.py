@@ -437,6 +437,19 @@ class ServerTests(unittest.TestCase):
         response = self._raw(b"GET /__inbox?limit=-1 HTTP/1.0\r\nHost: x\r\n\r\n")
         self.assertIn(b"400", response)
 
+    def test_unicode_line_separator_in_header_does_not_corrupt_inbox(self) -> None:
+        response = self._raw(
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nX-Weird: a\x85b\r\n"
+            b"Content-Length: 2\r\n\r\nhi"
+        )
+        self.assertIn(b"200", response)
+        records = self.store.all()
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].header("X-Weird"), "a\x85b")
+
+    def test_blank_pagination_value_is_rejected(self) -> None:
+        self.assertIn(b"400", self._raw(b"GET /__inbox?limit= HTTP/1.0\r\nHost: x\r\n\r\n"))
+
     def test_capture_into_unsupported_version_is_refused(self) -> None:
         self.store.path.write_text(
             json.dumps({"format": "postbox-inbox", "version": 99}) + "\n",

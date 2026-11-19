@@ -109,8 +109,9 @@ in memory.
 The read-only paths `/__inbox` and `/__health` are controlled only by GET and HEAD;
 any other method sent there is captured like an ordinary webhook. HEAD requests
 are captured but their responses carry headers only, as HTTP requires.
-Invalid pagination values get `400`; without query parameters the inbox still returns
-the original bare JSON array.
+Invalid or blank pagination values get `400`; without query parameters the inbox
+still returns the original bare JSON array. Records are split on newlines only, so
+Unicode line separators inside a header or body do not corrupt the file.
 
 Only `POST /__clear` and `DELETE /__clear` clear the inbox; every other method,
 including HEAD and OPTIONS, returns `405` with `Allow: POST, DELETE` so a prefetch

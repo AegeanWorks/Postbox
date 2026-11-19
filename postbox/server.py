@@ -190,7 +190,7 @@ class InboxHandler(BaseHTTPRequestHandler):
         self._send_json({"ok": True, "cleared": True})
 
     def _paged_inbox(self, query: str) -> None:
-        params = urllib.parse.parse_qs(query)
+        params = urllib.parse.parse_qs(query, keep_blank_values=True)
         try:
             limit = int(params.get("limit", ["100"])[0])
             offset = int(params.get("offset", ["0"])[0])
@@ -228,7 +228,7 @@ class InboxHandler(BaseHTTPRequestHandler):
                 self._clear()
         elif path == "/__inbox":
             try:
-                params = urllib.parse.parse_qs(query)
+                params = urllib.parse.parse_qs(query, keep_blank_values=True)
                 if "limit" in params or "offset" in params:
                     self._paged_inbox(query)
                 else:

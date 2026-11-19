@@ -9,8 +9,8 @@
 - **Total Python Modules**: `8`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `19`
-- **Total Class Methods**: `163`
-- **Total Source Lines**: `2349`
+- **Total Class Methods**: `165`
+- **Total Source Lines**: `2364`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`8` module(s))
@@ -131,7 +131,7 @@
 ### [`postbox/store.py`](postbox/store.py)
 > *Append-only JSONL persistence with atomic writes and a format version.*
 
-**Size**: `221` lines
+**Size**: `223` lines
 
 **Classes:**
 - `class UnsupportedFormatError` - *The inbox uses a format or version this loader cannot read.*
@@ -160,7 +160,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `1096` lines
+**Size**: `1109` lines
 
 **Classes:**
 - `class ModelTests`
@@ -215,6 +215,8 @@
   - Method `.test_non_get_requests_to_read_only_paths_are_captured()`
   - Method `.test_inbox_pagination()`
   - Method `.test_inbox_pagination_rejects_bad_values()`
+  - Method `.test_unicode_line_separator_in_header_does_not_corrupt_inbox()`
+  - Method `.test_blank_pagination_value_is_rejected()`
   - Method `.test_capture_into_unsupported_version_is_refused()`
   - Method `.test_capture_into_corrupt_inbox_is_refused()`
   - Method `.test_non_utf8_inbox_returns_json_500()`

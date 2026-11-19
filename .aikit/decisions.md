@@ -207,3 +207,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed python -m postbox.cli was a silent no-op, a truncated clear body wiped the inbox, and CLI clear refused the corrupt file it should fix.
 - **Decision**: Add a __main__ guard and package __main__.py, reject short clear bodies like capture does, and let CLI clear succeed without decoding a corrupt inbox.
 - **Consequences**: Documented commands work, malformed clear requests leave captures intact, and a corrupt inbox can be cleared from either CLI or HTTP.
+
+### ADR-029: Read JSONL by newline and reject blank pagination
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed str.splitlines() splits on U+0085/U+2028/U+2029, so a captured header containing one made every later read fail, and ?limit= was silently ignored.
+- **Decision**: Split records only on \\n and parse query strings with keep_blank_values so blank pagination values are rejected.
+- **Consequences**: Unicode content inside records stays readable, and malformed pagination gets 400 as documented.

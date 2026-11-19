@@ -92,7 +92,9 @@ class InboxStore:
         """Read and validate the file, returning its record lines."""
         if not self.path.exists():
             return []
-        lines = [line for line in self.path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        # Split on newline only: str.splitlines() also breaks on U+0085, U+2028
+        # and U+2029, which may legitimately appear inside a JSON string.
+        lines = [line for line in self.path.read_text(encoding="utf-8").split("\n") if line.strip()]
         if not lines:
             return []
 
