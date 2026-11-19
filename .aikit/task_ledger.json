@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-disconnect",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795068405.1276414,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,26 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795068433.473529,
+    "completed_head": "da3aa43f2306f76869522cd33dd7a1b380d9aaf1",
+    "completed_tree": "1d6bdc3df7c1453886dd22cba67fff8eb25e0c0e"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-extend",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-extend' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795066876.523502,
-      "timestamp_str": "2026-11-19 08:41:16",
-      "agent": "opencode:postbox",
-      "head": "4fde76102f41bf64c50f606d6c644de96dd5f434",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-clear",
       "phase": "phase 2",
@@ -400,6 +386,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-disconnect",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-disconnect' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795068433.6313164,
+      "timestamp_str": "2026-11-19 09:07:13",
+      "agent": "opencode:postbox",
+      "head": "da3aa43f2306f76869522cd33dd7a1b380d9aaf1",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
