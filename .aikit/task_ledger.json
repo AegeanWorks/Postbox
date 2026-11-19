@@ -3,32 +3,18 @@
   "active_task": {
     "task_id": "postbox-hostheaders",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795090304.629787,
     "owner": "opencode:postbox",
     "lease_until": 1795097504.629787,
     "started_by": "opencode:postbox",
-    "continuations": []
+    "continuations": [],
+    "completed_at": 1795090328.412667,
+    "completed_head": "6140bb09a43ab8911e0fe3088fa425dfd4936bad",
+    "completed_tree": "dbdb6b17074040de3e7daa655ea1e568be8d55c3"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-replayerr",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[2/2] Done: README replay failure shape and ADR-021",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795088125.7365572,
-      "timestamp_str": "2026-11-19 14:35:25",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-replayerr",
       "phase": "phase 4",
@@ -375,6 +361,23 @@
       "timestamp_str": "2026-11-19 15:11:44",
       "agent": "opencode:postbox",
       "checklists": "passed"
+    },
+    {
+      "task_id": "postbox-hostheaders",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-hostheaders' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795090328.5823622,
+      "timestamp_str": "2026-11-19 15:12:08",
+      "agent": "opencode:postbox",
+      "head": "6140bb09a43ab8911e0fe3088fa425dfd4936bad",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
