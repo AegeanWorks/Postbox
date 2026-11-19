@@ -3,32 +3,18 @@
   "active_task": {
     "task_id": "postbox-entryclear",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795092513.147985,
     "owner": "opencode:postbox",
     "lease_until": 1795099713.147985,
     "started_by": "opencode:postbox",
-    "continuations": []
+    "continuations": [],
+    "completed_at": 1795092530.5079885,
+    "completed_head": "408dfa0eda9a90fc3d75fdd15a0172b03fcb06af",
+    "completed_tree": "7f1c1e583827b9cb2f07bd22ec4e1877882e18bf"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-allow",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-allow' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795088741.1620655,
-      "timestamp_str": "2026-11-19 14:45:41",
-      "agent": "opencode:postbox",
-      "head": "58fc26bf102c234d8438f0c1fab52363370bc0d1",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-importcl",
       "phase": "phase 2",
@@ -319,6 +305,23 @@
       "timestamp_str": "2026-11-19 15:48:33",
       "agent": "opencode:postbox",
       "checklists": "passed"
+    },
+    {
+      "task_id": "postbox-entryclear",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-entryclear' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795092530.580355,
+      "timestamp_str": "2026-11-19 15:48:50",
+      "agent": "opencode:postbox",
+      "head": "408dfa0eda9a90fc3d75fdd15a0172b03fcb06af",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
