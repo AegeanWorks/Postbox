@@ -1,44 +1,17 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-smuggling",
+    "task_id": "postbox-publish",
     "last_phase": "in_progress",
-    "active_phase": 5,
-    "status": "completed",
-    "updated_at": 1795109846.9037883,
+    "active_phase": 4,
+    "status": "in_progress",
+    "updated_at": 1795110333.8351183,
     "owner": "opencode:postbox",
-    "lease_until": 1795117046.9037883,
+    "lease_until": 1795117533.8351183,
     "started_by": "opencode:postbox",
-    "continuations": [],
-    "completed_at": 1795109888.6316543,
-    "completed_head": "9f0699713af6fb3c25285ba8d39744b6a5e36022",
-    "completed_tree": "b47c7502a180fb79467f88caafc3ae4e99d2d18e"
+    "continuations": []
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-1",
-      "phase": "reforge stage 18",
-      "phase_num": 3,
-      "description": "Reforge stage 18: window 54, 3 commit(s), 6 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795108366.2395434,
-      "timestamp_str": "2026-11-19 20:12:46",
-      "agent": "opencode",
-      "operator_task": "postbox-reforge"
-    },
-    {
-      "task_id": "reforge:run-1",
-      "phase": "reforge stage 18",
-      "phase_num": 3,
-      "description": "Reforge stage 18: stage 18 host review reviewed; run active; coverage 24/24",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795108380.6549842,
-      "timestamp_str": "2026-11-19 20:13:00",
-      "agent": "opencode",
-      "operator_task": "postbox-reforge"
-    },
     {
       "task_id": "reforge:run-1",
       "phase": "reforge stage 19",
@@ -295,6 +268,35 @@
         ],
         "forced": false
       }
+    },
+    {
+      "task_id": "postbox-publish",
+      "phase": "in_progress",
+      "phase_num": 2,
+      "description": "Publish Postbox as a public GitHub repository",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795110332.9547412,
+      "timestamp_str": "2026-11-19 20:45:32",
+      "agent": "opencode:postbox",
+      "impact_assessment": {
+        "why": "The user explicitly authorized publishing the app as public.",
+        "benefits": "Postbox becomes available at github.com/AegeanWorks/Postbox.",
+        "risks": "contract: public visibility; dependency: gh auth; concurrency: none; state: remote repo created.",
+        "mitigation": "Run publish --public with gated checks and secret scanning."
+      }
+    },
+    {
+      "task_id": "postbox-publish",
+      "phase": "in_progress",
+      "phase_num": 4,
+      "description": "Publish authorized and gates green",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795110333.8351183,
+      "timestamp_str": "2026-11-19 20:45:33",
+      "agent": "opencode:postbox",
+      "checklists": "passed"
     }
   ]
 }
