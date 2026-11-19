@@ -144,3 +144,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A shared lookup helper printed replay-specific guidance for show and delete, and emitted human text even with --json, breaking agent parsing.
 - **Decision**: Parameterise the helper with command context and JSON mode; emit not_found/ambiguous_id JSON objects under --json and use the calling command's name in human guidance.
 - **Consequences**: Agents can parse failures consistently; delete now validates through the same helper before removing by full id.
+
+### ADR-020: Structured success output for mutating and replay commands
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed clear and import printed human text under --json, so agents could not parse the result even though delete and error paths were structured.
+- **Decision**: Emit JSON success objects for clear, import and replay (in addition to the existing delete object), leaving human output unchanged.
+- **Consequences**: Every command result is consistently parseable in --json mode; the shapes are documented in the README.

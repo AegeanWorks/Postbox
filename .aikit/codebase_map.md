@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `18`
-- **Total Class Methods**: `143`
-- **Total Source Lines**: `2011`
+- **Total Class Methods**: `146`
+- **Total Source Lines**: `2068`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `407` lines
+**Size**: `429` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -42,7 +42,7 @@
 - `def _build_parser()`
 - `def _lookup_error(prefix, context, json_mode, ambiguous)` - *Report a failed lookup in the calling command's own language.*
 - `def _find_or_error(store, prefix, context, json_mode)`
-- `def _replay(request, url, timeout, preserve_path)`
+- `def _replay(request, url, timeout, preserve_path, json_mode)`
 - `def _dispatch(args, store)`
 - `def main(argv)` - *Run the CLI and return an exit code.*
 
@@ -152,7 +152,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `863` lines
+**Size**: `898` lines
 
 **Classes:**
 - `class ModelTests`
@@ -232,6 +232,8 @@
   - Method `.test_json_output_is_parseable()`
   - Method `.test_show_missing_returns_error()`
   - Method `.test_clear()`
+  - Method `.test_clear_json_output()`
+  - Method `.test_import_json_output()`
   - Method `.test_ambiguous_prefix_returns_error()`
   - Method `.test_empty_method_filter_is_not_ignored()`
   - Method `.test_empty_path_filter_is_not_ignored()`
@@ -251,6 +253,7 @@
   - Method `.test_non_loopback_host_is_refused()`
   - Method `.test_invalid_numeric_flags_return_error()`
   - Method `.test_bad_replay_url_returns_error()`
+  - Method `.test_replay_json_output()`
   - Method `.test_replay_sends_body_for_delete()`
   - Method `._replay_target(request_id, extra)`
   - Method `.test_replay_preserves_captured_path_and_query()`

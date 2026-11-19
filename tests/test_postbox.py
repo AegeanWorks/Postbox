@@ -611,6 +611,19 @@ class CliTests(unittest.TestCase):
         self.assertEqual(main(["--file", str(self.path), "clear"]), 0)
         self.assertEqual(self.store.count(), 0)
 
+    def test_clear_json_output(self) -> None:
+        main(["--file", str(self.path), "--json", "clear"])
+        self.assertEqual(json.loads(self._stdout.getvalue())["cleared"], 3)
+
+    def test_import_json_output(self) -> None:
+        snapshot = Path(self.path).parent / "json-snapshot.json"
+        main(["--file", str(self.path), "export", "--output", str(snapshot)])
+        target = Path(self.path).parent / "json-target.jsonl"
+        main(["--file", str(target), "--json", "import", str(snapshot)])
+        payload = json.loads(self._stdout.getvalue())
+        self.assertEqual(payload["imported"], 3)
+        self.assertEqual(payload["skipped"], 0)
+
     def test_ambiguous_prefix_returns_error(self) -> None:
         self.store.append(make_request(id="abc2"))
         self.assertEqual(main(["--file", str(self.path), "show", "abc"]), 1)
@@ -753,6 +766,28 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             main(["--file", str(self.path), "replay", "abc", "--url", "not-a-url"]), 1
         )
+
+    def test_replay_json_output(self) -> None:
+        target_store = InboxStore(Path(self.path).parent / "json-replay.jsonl")
+        server = InboxServer(("127.0.0.1", 0), target_store)
+        port = server.server_address[1]
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            self._stdout.seek(0)
+            self._stdout.truncate(0)
+            result = main(
+                ["--file", str(self.path), "--json", "replay", "abc", "--url",
+                 f"http://127.0.0.1:{port}/target", "--timeout", "3"]
+            )
+            self.assertEqual(result, 0)
+            payload = json.loads(self._stdout.getvalue())
+            self.assertEqual(payload["status"], 200)
+            self.assertEqual(payload["method"], "POST")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
 
     def test_replay_sends_body_for_delete(self) -> None:
         target_store = InboxStore(Path(self.path).parent / "target.jsonl")

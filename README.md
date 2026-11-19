@@ -41,6 +41,7 @@ python -m unittest discover -s tests
 - **Agent-friendly output**: `python -m postbox.cli --file inbox.jsonl --json list --method POST --path /hook`
 - **Flag placement**: `--file` and `--json` also work after the subcommand, e.g. `postbox list --json`
 - **Agent errors**: with `--json`, a missing or ambiguous id prints `{"error": "not_found"|"ambiguous_id", "prefix": ...}`
+- **Agent results**: with `--json`, `clear`/`import`/`delete`/`replay` print `{"cleared": N}`, `{"imported": N, "skipped": M}`, `{"deleted": "id"}` or `{"method": ..., "url": ..., "status": ...}`
 - **Time window**: `python -m postbox.cli --file inbox.jsonl list --after 2026-11-19 --before 2026-11-20`
 - **Portable snapshot**: `python -m postbox.cli --file inbox.jsonl export --output snapshot.json`
 - **Restore snapshot**: `python -m postbox.cli --file other.jsonl import snapshot.json`

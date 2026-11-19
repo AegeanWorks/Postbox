@@ -206,7 +206,11 @@ def _find_or_error(
 
 
 def _replay(
-    request: CapturedRequest, url: str, timeout: float, preserve_path: bool = False
+    request: CapturedRequest,
+    url: str,
+    timeout: float,
+    preserve_path: bool = False,
+    json_mode: bool = False,
 ) -> int:
     try:
         parsed = urllib.parse.urlparse(url)
@@ -238,7 +242,19 @@ def _replay(
             target_url, data=request.body, headers=headers, method=request.method
         )
         with urllib.request.urlopen(target, timeout=timeout) as response:
-            print(f"{request.method} {target_url} -> {response.status}")
+            if json_mode:
+                print(
+                    json.dumps(
+                        {
+                            "method": request.method,
+                            "url": target_url,
+                            "status": response.status,
+                        },
+                        ensure_ascii=False,
+                    )
+                )
+            else:
+                print(f"{request.method} {target_url} -> {response.status}")
             return 0
     except (URLError, OSError, ValueError) as exc:
         print(f"Replay failed: {exc}")
@@ -318,7 +334,10 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
     if args.command == "clear":
         count = store.count()
         store.clear()
-        print(f"Cleared {count} captured request(s).")
+        if args.json:
+            print(json.dumps({"cleared": count}))
+        else:
+            print(f"Cleared {count} captured request(s).")
         return 0
 
     if args.command == "export":
@@ -354,14 +373,17 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
         fresh = [request for request in requests if request.id not in known_ids]
         store.extend(fresh)
         skipped = len(requests) - len(fresh)
-        print(f"Imported {len(fresh)} request(s), skipped {skipped} duplicate(s).")
+        if args.json:
+            print(json.dumps({"imported": len(fresh), "skipped": skipped}))
+        else:
+            print(f"Imported {len(fresh)} request(s), skipped {skipped} duplicate(s).")
         return 0
 
     if args.command == "replay":
         request = _find_or_error(store, args.id, "replay", args.json)
         if request is None:
             return 1
-        return _replay(request, args.url, args.timeout, args.preserve_path)
+        return _replay(request, args.url, args.timeout, args.preserve_path, args.json)
 
     return 2
 
