@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-cli",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795065989.404909,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,33 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795066012.4046514,
+    "completed_head": "ea20492b53ff249bd8a39b5b390db2fdbac2429f",
+    "completed_tree": "d76d4f29585a23c05832f2560f1694d736d034d0"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-secrets",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/4] Secret hygiene: redact sensitive headers and query keys at capture, skip them on replay",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795038097.3608687,
-      "timestamp_str": "2026-11-19 00:41:37",
-      "agent": "opencode:postbox",
-      "impact_assessment": {
-        "why": "A probe showed Authorization, Cookie and token query values written verbatim into the inbox file, turning a local debugging tool into a plaintext secret store.",
-        "benefits": "Captured payloads stay useful for debugging while credentials are not persisted or replayed.",
-        "risks": "contract: redaction changes stored records and replay payloads, so ADR-005 and README must ship together; dependency: stdlib only; concurrency: redaction is pure and runs before the store lock; state: no format change, only field values.",
-        "mitigation": "Centralise redaction in a pure function with known-answer tests; filter redacted headers on replay; document the behaviour before commit; run the full gate."
-      },
-      "plan_digest": "3bc2e166ce7b506cba46460940e329f00e715df44f79df066414cfe5a18b9f95",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-secrets",
       "phase": "phase 3",
@@ -393,6 +372,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-cli",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-cli' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795066012.5008776,
+      "timestamp_str": "2026-11-19 08:26:52",
+      "agent": "opencode:postbox",
+      "head": "ea20492b53ff249bd8a39b5b390db2fdbac2429f",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
