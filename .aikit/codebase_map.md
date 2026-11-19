@@ -9,8 +9,8 @@
 - **Total Python Modules**: `8`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `19`
-- **Total Class Methods**: `171`
-- **Total Source Lines**: `2428`
+- **Total Class Methods**: `174`
+- **Total Source Lines**: `2464`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`8` module(s))
@@ -93,7 +93,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `335` lines
+**Size**: `354` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -104,6 +104,7 @@
   - Method `._send_json(payload, status, extra_headers)`
   - Method `._inbox_error(exc)` - *Report a store failure as JSON instead of dropping the connection.*
   - Method `._bad_request(reason)`
+  - Method `._read_full_line(limit)` - *Read a whole CRLF line, consuming long chunk extensions fully.*
   - Method `._read_chunked_body(limit)` - *Decode a chunked body with bounded reads and an optional size cap.*
   - Method `._capture()`
   - Method `._drain_body()` - *Consume and validate a request body; return False if a 400 was sent.*
@@ -161,7 +162,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `1146` lines
+**Size**: `1163` lines
 
 **Classes:**
 - `class ModelTests`
@@ -225,6 +226,8 @@
   - Method `.test_conflicting_content_length_is_rejected()`
   - Method `.test_malformed_content_length_is_rejected()`
   - Method `.test_negative_content_length_is_rejected()`
+  - Method `.test_long_chunk_extension_is_decoded()`
+  - Method `.test_oversize_chunk_size_on_clear_returns_400()`
   - Method `.test_chunked_body_is_decoded()`
   - Method `.test_chunked_oversize_body_is_rejected()`
   - Method `.test_malformed_chunk_size_is_rejected()`

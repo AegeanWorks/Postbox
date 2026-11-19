@@ -128,6 +128,7 @@ are decoded with the same cumulative size limit; malformed chunk framing gets
 `400`. Malformed, negative or duplicate `Content-Length` headers also get `400`,
 as does a body
 that is shorter than the declared length; incomplete bodies are never stored.
+Chunk extensions are consumed in full, and a single chunk above 64 MiB is refused.
 A corrupt or non-UTF-8 inbox
 produces a JSON `500` rather than a dropped connection, including on capture:
 an unreadable file is never acknowledged with an id that could not be retrieved. `serve --max N` keeps only

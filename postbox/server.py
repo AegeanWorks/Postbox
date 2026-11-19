@@ -18,6 +18,7 @@ from postbox.models import (
 from postbox.store import InboxStore, UnsupportedFormatError
 
 DEFAULT_MAX_BODY = 1_048_576  # 1 MiB
+_MAX_CHUNK_BYTES = 64 * 1024 * 1024  # hard cap even when no body limit is set
 _INBOX_ERRORS = (
     CorruptInboxError,
     UnsupportedFormatError,
@@ -74,12 +75,28 @@ class InboxHandler(BaseHTTPRequestHandler):
     def _bad_request(self, reason: str) -> None:
         self._send_json({"error": reason}, 400)
 
+    def _read_full_line(self, limit: int = 65536) -> bytes:
+        """Read a whole CRLF line, consuming long chunk extensions fully."""
+        parts: list[bytes] = []
+        total = 0
+        while True:
+            part = self.rfile.readline(1024)
+            if not part:
+                break
+            parts.append(part)
+            total += len(part)
+            if part.endswith(b"\n"):
+                break
+            if total > limit:
+                raise _BadChunkedBody("line too long")
+        return b"".join(parts).strip()
+
     def _read_chunked_body(self, limit: int | None = None) -> bytes:
         """Decode a chunked body with bounded reads and an optional size cap."""
         chunks: list[bytes] = []
         total = 0
         while True:
-            line = self.rfile.readline(128).strip()
+            line = self._read_full_line()
             if not line:
                 raise _BadChunkedBody("empty chunk size")
             try:
@@ -88,10 +105,12 @@ class InboxHandler(BaseHTTPRequestHandler):
                 raise _BadChunkedBody("invalid chunk size") from exc
             if size < 0:
                 raise _BadChunkedBody("negative chunk size")
+            if size > _MAX_CHUNK_BYTES:
+                raise _BadChunkedBody("chunk size too large")
             if size == 0:
                 while True:
-                    trailer = self.rfile.readline(65536)
-                    if trailer in (b"\r\n", b"\n", b""):
+                    trailer = self._read_full_line()
+                    if not trailer:
                         break
                 break
             total += size

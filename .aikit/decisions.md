@@ -228,3 +228,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed a complete 16 MiB + 1 clear body was rejected as incomplete, and malformed chunked clear destroyed the inbox while capture rejected the same input.
 - **Decision**: Drain declared bodies in bounded chunks until complete and validate chunked bodies with the shared decoder before clearing.
 - **Consequences**: Large legitimate clears succeed, malformed framing gets 400 without data loss, and clear now shares capture's framing rules.
+
+### ADR-032: Consume full chunk lines and cap single chunk size
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed long chunk extensions caused a valid webhook to be rejected, and a huge chunk size on clear raised OverflowError and dropped the connection.
+- **Decision**: Read chunk-size and trailer lines until newline with a bound, and reject single chunks above 64 MiB before reading them.
+- **Consequences**: Legitimate chunked bodies with extensions are captured, and malformed or absurd chunk sizes get JSON 400 instead of a traceback.

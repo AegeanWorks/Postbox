@@ -510,6 +510,23 @@ class ServerTests(unittest.TestCase):
         self.assertIn(b"400", response)
         self.assertEqual(self.store.count(), 0)
 
+    def test_long_chunk_extension_is_decoded(self) -> None:
+        extension = b"a" * 200
+        payload = (
+            b"POST /hook HTTP/1.0\r\nHost: x\r\nTransfer-Encoding: chunked\r\n\r\n"
+            b"4;" + extension + b"\r\nwiki\r\n0\r\n\r\n"
+        )
+        self.assertIn(b"200", self._raw(payload))
+        self.assertEqual(self.store.all()[0].body, b"wiki")
+
+    def test_oversize_chunk_size_on_clear_returns_400(self) -> None:
+        payload = (
+            b"POST /__clear HTTP/1.0\r\nHost: x\r\nTransfer-Encoding: chunked\r\n\r\n"
+            b"7FFFFFFFFFFFFFFF\r\n0\r\n\r\n"
+        )
+        response = self._raw(payload)
+        self.assertIn(b"400", response)
+
     def test_chunked_body_is_decoded(self) -> None:
         response = self._raw(
             b"POST /hook HTTP/1.0\r\nHost: x\r\nTransfer-Encoding: chunked\r\n\r\n"
