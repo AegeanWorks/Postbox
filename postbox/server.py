@@ -137,6 +137,15 @@ class InboxHandler(BaseHTTPRequestHandler):
         self._send_json({"ok": True, "id": request.id})
 
     def _clear(self) -> None:
+        # Drain a bounded prefix so the client finishes its write before we
+        # answer; closing early aborts the client's send (WinError 10053).
+        raw_length = self.headers.get("Content-Length")
+        try:
+            length = int(raw_length) if raw_length is not None else 0
+        except (TypeError, ValueError):
+            length = 0
+        if length > 0:
+            self.rfile.read(min(length, 16 * 1024 * 1024))
         try:
             self.store.clear()
         except _INBOX_ERRORS as exc:
@@ -170,13 +179,14 @@ class InboxHandler(BaseHTTPRequestHandler):
     def _route(self) -> None:
         path, _, query = self.path.partition("?")
         if path == "/__clear":
-            if self.command == "GET":
+            if self.command not in {"POST", "DELETE"}:
                 self._send_json({"error": "use POST or DELETE to clear"}, 405)
             else:
                 self._clear()
         elif path == "/__inbox":
             try:
-                if "limit" in query or "offset" in query:
+                params = urllib.parse.parse_qs(query)
+                if "limit" in params or "offset" in params:
                     self._paged_inbox(query)
                 else:
                     self._send_json([item.to_dict() for item in self.store.all()])

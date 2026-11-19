@@ -81,3 +81,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed extend() replaced the whole inbox when no retention cap was set, so an import into a non-empty inbox destroyed its captures; a second import would then duplicate ids.
 - **Decision**: Always decode existing records in extend(), and skip imported records whose id already exists in the target, reporting imported and skipped counts.
 - **Consequences**: Imports are safe to repeat and non-destructive; a caller who wants a fresh inbox must clear it or use a different --file before importing.
+
+### ADR-011: Strict clear-method guard and key-based pagination detection
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed HEAD/OPTIONS /__clear destroyed captures despite the documented protection, POST /__clear with a body aborted the client, and substring matching made ?filter=limit look like pagination.
+- **Decision**: Allow only POST and DELETE to clear, drain a bounded body prefix before answering, detect pagination by parsed query keys, and treat an explicitly empty --method/--path as a real filter.
+- **Consequences**: Read-only probes are harmless, large clear bodies no longer reset the connection, and endpoint/filter parsing follows the documented contract.

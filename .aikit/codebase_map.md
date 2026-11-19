@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `15`
 - **Total Top-Level Functions**: `16`
-- **Total Class Methods**: `120`
-- **Total Source Lines**: `1733`
+- **Total Class Methods**: `125`
+- **Total Source Lines**: `1774`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -82,7 +82,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `255` lines
+**Size**: `265` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -148,7 +148,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `686` lines
+**Size**: `717` lines
 
 **Classes:**
 - `class ModelTests`
@@ -201,6 +201,9 @@
   - Method `.test_chunked_oversize_body_is_rejected()`
   - Method `.test_malformed_chunk_size_is_rejected()`
   - Method `.test_get_clear_is_a_noop()`
+  - Method `.test_read_only_methods_on_clear_are_noops()`
+  - Method `.test_clear_with_body_does_not_abort_client()`
+  - Method `.test_pagination_detected_by_query_key_not_substring()`
   - Method `.test_corrupt_inbox_returns_json_error()`
   - Method `.test_head_and_options_are_captured()`
   - Method `.test_secrets_are_redacted_on_capture()`
@@ -213,6 +216,8 @@
   - Method `.test_show_missing_returns_error()`
   - Method `.test_clear()`
   - Method `.test_ambiguous_prefix_returns_error()`
+  - Method `.test_empty_method_filter_is_not_ignored()`
+  - Method `.test_empty_path_filter_is_not_ignored()`
   - Method `.test_delete_command()`
   - Method `.test_delete_missing_returns_error()`
   - Method `.test_export_import_roundtrip()`

@@ -104,7 +104,9 @@ HEAD requests are captured but their responses carry headers only, as HTTP requi
 Invalid pagination values get `400`; without query parameters the inbox still returns
 the original bare JSON array.
 
-`GET /__clear` returns `405` so a prefetch cannot destroy captures. Bodies above
+Only `POST /__clear` and `DELETE /__clear` clear the inbox; every other method,
+including HEAD and OPTIONS, returns `405` so a prefetch cannot destroy captures.
+Bodies above
 `--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies
 are decoded with the same cumulative size limit; malformed chunk framing gets
 `400`. Malformed or negative `Content-Length` also gets `400`. A corrupt inbox

@@ -393,6 +393,29 @@ class ServerTests(unittest.TestCase):
             self.assertTrue(json.loads(result.read())["cleared"])
         self.assertEqual(self.store.count(), 0)
 
+    def test_read_only_methods_on_clear_are_noops(self) -> None:
+        for method in (b"HEAD", b"OPTIONS", b"CONNECT", b"TRACE"):
+            self._post("/hook", b"data")
+            response = self._raw(method + b" /__clear HTTP/1.0\r\nHost: x\r\n\r\n")
+            self.assertIn(b"405", response, method.decode())
+            self.assertEqual(self.store.count(), 1, method.decode())
+            self.store.clear()
+
+    def test_clear_with_body_does_not_abort_client(self) -> None:
+        with socket.create_connection(("127.0.0.1", self.port), timeout=15) as sock:
+            sock.settimeout(15)
+            sock.sendall(
+                b"POST /__clear HTTP/1.0\r\nHost: x\r\nContent-Length: 2097152\r\n\r\n"
+            )
+            sock.sendall(b"Z" * (2 * 1024 * 1024))
+            self.assertIn(b"200", sock.recv(4096))
+
+    def test_pagination_detected_by_query_key_not_substring(self) -> None:
+        with urllib.request.urlopen(
+            f"http://127.0.0.1:{self.port}/__inbox?filter=limit", timeout=5
+        ) as response:
+            self.assertIsInstance(json.loads(response.read()), list)
+
     def test_corrupt_inbox_returns_json_error(self) -> None:
         self.store.path.write_text(
             '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"
@@ -475,6 +498,14 @@ class CliTests(unittest.TestCase):
     def test_ambiguous_prefix_returns_error(self) -> None:
         self.store.append(make_request(id="abc2"))
         self.assertEqual(main(["--file", str(self.path), "show", "abc"]), 1)
+
+    def test_empty_method_filter_is_not_ignored(self) -> None:
+        main(["--file", str(self.path), "--json", "list", "--method", ""])
+        self.assertEqual(json.loads(self._stdout.getvalue()), [])
+
+    def test_empty_path_filter_is_not_ignored(self) -> None:
+        main(["--file", str(self.path), "--json", "list", "--path", ""])
+        self.assertEqual(json.loads(self._stdout.getvalue()), [])
 
     def test_delete_command(self) -> None:
         self.assertEqual(main(["--file", str(self.path), "delete", "abc"]), 0)

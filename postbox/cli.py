@@ -230,9 +230,9 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
 
     if args.command == "list":
         requests = store.all()
-        if args.method:
+        if args.method is not None:
             requests = [r for r in requests if r.method.upper() == args.method.upper()]
-        if args.path:
+        if args.path is not None:
             requests = [r for r in requests if r.path == args.path]
         if args.after is not None or args.before is not None:
             requests = [
