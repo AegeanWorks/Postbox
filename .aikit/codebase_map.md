@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `18`
-- **Total Class Methods**: `146`
-- **Total Source Lines**: `2068`
+- **Total Class Methods**: `147`
+- **Total Source Lines**: `2080`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `429` lines
+**Size**: `432` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -152,7 +152,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `898` lines
+**Size**: `907` lines
 
 **Classes:**
 - `class ModelTests`
@@ -252,6 +252,7 @@
   - Method `.test_loopback_detection()`
   - Method `.test_non_loopback_host_is_refused()`
   - Method `.test_invalid_numeric_flags_return_error()`
+  - Method `.test_replay_error_is_machine_readable_under_json()`
   - Method `.test_bad_replay_url_returns_error()`
   - Method `.test_replay_json_output()`
   - Method `.test_replay_sends_body_for_delete()`

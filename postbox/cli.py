@@ -257,9 +257,12 @@ def _replay(
                 print(f"{request.method} {target_url} -> {response.status}")
             return 0
     except (URLError, OSError, ValueError) as exc:
-        print(f"Replay failed: {exc}")
-        print("Why: the target must be a reachable http(s) URL that accepts this method and body.")
-        print("Fix: check --url, then retry with a longer --timeout if the target is slow.")
+        if json_mode:
+            print(json.dumps({"error": "replay_failed", "detail": str(exc)}, ensure_ascii=False))
+        else:
+            print(f"Replay failed: {exc}")
+            print("Why: the target must be a reachable http(s) URL that accepts this method and body.")
+            print("Fix: check --url, then retry with a longer --timeout if the target is slow.")
         return 1
 
 

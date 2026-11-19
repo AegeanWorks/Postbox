@@ -762,6 +762,15 @@ class CliTests(unittest.TestCase):
         self.assertEqual(main(["--file", str(self.path), "serve", "--max", "0"]), 2)
         self.assertEqual(main(["--file", str(self.path), "list", "--limit", "-1"]), 2)
 
+    def test_replay_error_is_machine_readable_under_json(self) -> None:
+        result = main(
+            ["--file", str(self.path), "--json", "replay", "abc", "--url", "not-a-url"]
+        )
+        self.assertEqual(result, 1)
+        payload = json.loads(self._stdout.getvalue())
+        self.assertEqual(payload["error"], "replay_failed")
+        self.assertIn("detail", payload)
+
     def test_bad_replay_url_returns_error(self) -> None:
         self.assertEqual(
             main(["--file", str(self.path), "replay", "abc", "--url", "not-a-url"]), 1

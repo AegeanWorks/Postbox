@@ -151,3 +151,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed clear and import printed human text under --json, so agents could not parse the result even though delete and error paths were structured.
 - **Decision**: Emit JSON success objects for clear, import and replay (in addition to the existing delete object), leaving human output unchanged.
 - **Consequences**: Every command result is consistently parseable in --json mode; the shapes are documented in the README.
+
+### ADR-021: Structured replay failure output
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed replay failures still printed prose under --json, unlike all other command results documented in ADR-020.
+- **Decision**: Print a replay_failed JSON object with an error detail field on replay failure in JSON mode, preserving the human Why and Fix text otherwise.
+- **Consequences**: Agents can parse replay success and failure uniformly; the exit code stays 1.
