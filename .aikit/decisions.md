@@ -214,3 +214,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed str.splitlines() splits on U+0085/U+2028/U+2029, so a captured header containing one made every later read fail, and ?limit= was silently ignored.
 - **Decision**: Split records only on \\n and parse query strings with keep_blank_values so blank pagination values are rejected.
 - **Consequences**: Unicode content inside records stays readable, and malformed pagination gets 400 as documented.
+
+### ADR-030: Structured top-level errors and honest empty-list output
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed main() printed prose for corrupt/unsupported/OS errors even under --json, and a filtered-empty list claimed the inbox itself was empty.
+- **Decision**: Emit error objects for those top-level exceptions in JSON mode and distinguish an empty inbox from a filter with no matches.
+- **Consequences**: All CLI output is parseable under --json, and empty-list messages accurately describe the result.

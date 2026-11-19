@@ -40,7 +40,8 @@ python -m unittest discover -s tests
 - **Clear**: `python -m postbox.cli --file inbox.jsonl clear`
 - **Agent-friendly output**: `python -m postbox.cli --file inbox.jsonl --json list --method POST --path /hook`
 - **Flag placement**: `--file` and `--json` also work after the subcommand, e.g. `postbox list --json`
-- **Agent errors**: with `--json`, a missing or ambiguous id prints `{"error": "not_found"|"ambiguous_id", "prefix": ...}`
+- **Agent errors**: with `--json`, failures print `not_found`, `ambiguous_id`, `corrupt_inbox`, `unsupported_format`, `replay_failed` or `cli_error` objects with an `error` field
+- **Empty lists**: an inbox with no matches prints `No matching requests.` rather than claiming the inbox is empty
 - **Agent results**: with `--json`, `clear`/`import`/`delete`/`replay` print `{"cleared": N}`, `{"imported": N, "skipped": M}`, `{"deleted": "id"}` or `{"method": ..., "url": ..., "status": ...}`
 - **Replay failures**: with `--json`, a failed replay prints `{"error": "replay_failed", "detail": ...}`
 - **Timeouts**: `--timeout` must be finite, non-negative and at most 86400 seconds

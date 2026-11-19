@@ -1098,6 +1098,24 @@ class CliTests(unittest.TestCase):
         self.assertEqual(self.path.read_text(encoding="utf-8"),
                          '{"format": "postbox-inbox", "version": 1}\n')
 
+    def test_json_mode_reports_corrupt_inbox_as_json(self) -> None:
+        self.path.write_text(
+            '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"
+        )
+        self.assertEqual(main(["--file", str(self.path), "--json", "list"]), 1)
+        self.assertEqual(json.loads(self._stdout.getvalue())["error"], "corrupt_inbox")
+
+    def test_json_mode_reports_unsupported_version_as_json(self) -> None:
+        self.path.write_text(
+            '{"format":"postbox-inbox","version":99}\n', encoding="utf-8"
+        )
+        self.assertEqual(main(["--file", str(self.path), "--json", "list"]), 1)
+        self.assertEqual(json.loads(self._stdout.getvalue())["error"], "unsupported_format")
+
+    def test_filter_no_match_does_not_claim_empty_inbox(self) -> None:
+        main(["--file", str(self.path), "list", "--method", "HEAD"])
+        self.assertNotIn("Inbox is empty", self._stdout.getvalue())
+
     def test_corrupt_inbox_gets_friendly_error(self) -> None:
         self.path.write_text(
             '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"

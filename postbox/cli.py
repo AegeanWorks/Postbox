@@ -313,7 +313,8 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
             lock.release()
 
     if args.command == "list":
-        requests = store.all()
+        unfiltered = store.all()
+        requests = unfiltered
         if args.method is not None:
             requests = [r for r in requests if r.method.upper() == args.method.upper()]
         if args.path is not None:
@@ -330,7 +331,7 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
             for request in requests:
                 print(f"{request.id}  {request.method:6}  {request.path}")
             if not requests:
-                print("Inbox is empty.")
+                print("Inbox is empty." if not unfiltered else "No matching requests.")
         return 0
 
     if args.command == "show":
@@ -449,19 +450,28 @@ def main(argv: list[str] | None = None) -> int:
         store = InboxStore(args.file, max_requests=max_requests)
         return _dispatch(args, store)
     except UnsupportedFormatError as exc:
-        print(f"Error: {exc}")
-        print("Why: this loader refuses a format it cannot read, and leaves the file untouched.")
-        print("Fix: point --file at a Postbox v1 inbox, or add a migration for that version.")
+        if args.json:
+            print(json.dumps({"error": "unsupported_format", "detail": str(exc)}))
+        else:
+            print(f"Error: {exc}")
+            print("Why: this loader refuses a format it cannot read, and leaves the file untouched.")
+            print("Fix: point --file at a Postbox v1 inbox, or add a migration for that version.")
         return 1
     except CorruptInboxError as exc:
-        print(f"Error: corrupt inbox -- {exc}")
-        print("Why: a damaged record cannot be decoded without risking a wrong replay.")
-        print("Fix: clear the inbox, or restore it from a backup, then retry.")
+        if args.json:
+            print(json.dumps({"error": "corrupt_inbox", "detail": str(exc)}))
+        else:
+            print(f"Error: corrupt inbox -- {exc}")
+            print("Why: a damaged record cannot be decoded without risking a wrong replay.")
+            print("Fix: clear the inbox, or restore it from a backup, then retry.")
         return 1
     except (OSError, ValueError, OverflowError) as exc:
-        print(f"Error: {exc}")
-        print("Why: the inbox file or one of its settings is invalid or inaccessible.")
-        print("Fix: check --file, its permissions and the numeric options, then retry.")
+        if args.json:
+            print(json.dumps({"error": "cli_error", "detail": str(exc)}))
+        else:
+            print(f"Error: {exc}")
+            print("Why: the inbox file or one of its settings is invalid or inaccessible.")
+            print("Fix: check --file, its permissions and the numeric options, then retry.")
         return 1
     finally:
         if lock is not None:

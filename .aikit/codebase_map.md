@@ -9,8 +9,8 @@
 - **Total Python Modules**: `8`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `19`
-- **Total Class Methods**: `165`
-- **Total Source Lines**: `2364`
+- **Total Class Methods**: `168`
+- **Total Source Lines**: `2392`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`8` module(s))
@@ -37,7 +37,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `472` lines
+**Size**: `482` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -160,7 +160,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `1109` lines
+**Size**: `1127` lines
 
 **Classes:**
 - `class ModelTests`
@@ -289,6 +289,9 @@
   - Method `.test_delete_error_is_not_replay_specific()`
   - Method `.test_lookup_error_is_machine_readable_under_json()`
   - Method `.test_clear_can_remove_corrupt_inbox()`
+  - Method `.test_json_mode_reports_corrupt_inbox_as_json()`
+  - Method `.test_json_mode_reports_unsupported_version_as_json()`
+  - Method `.test_filter_no_match_does_not_claim_empty_inbox()`
   - Method `.test_corrupt_inbox_gets_friendly_error()`
 
 **Functions:**
