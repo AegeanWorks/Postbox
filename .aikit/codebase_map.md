@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `16`
-- **Total Class Methods**: `135`
-- **Total Source Lines**: `1883`
+- **Total Class Methods**: `137`
+- **Total Source Lines**: `1933`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `355` lines
+**Size**: `368` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -150,7 +150,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `792` lines
+**Size**: `829` lines
 
 **Classes:**
 - `class ModelTests`
@@ -191,6 +191,8 @@
   - Method `.setUp()`
   - Method `.test_lock_is_exclusive_and_releasable()`
   - Method `.test_cli_refuses_when_lock_is_held()`
+  - Method `.test_cli_writes_refused_while_lock_is_held()`
+  - Method `.test_read_commands_allowed_while_lock_is_held()`
 - `class ServerTests`
   - Method `.setUp()`
   - Method `._stop_server()`

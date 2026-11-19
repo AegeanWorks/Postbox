@@ -327,12 +327,22 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
     return 2
 
 
+_WRITE_COMMANDS = frozenset({"clear", "delete", "import"})
+
+
 def main(argv: list[str] | None = None) -> int:
     """Run the CLI and return an exit code."""
     try:
         args = _build_parser().parse_args(argv)
     except SystemExit as exc:
         return int(exc.code or 0)
+
+    lock = SingleWriterLock(args.file) if args.command in _WRITE_COMMANDS else None
+    if lock is not None and not lock.acquire():
+        print("Error: a serve process is using this inbox file.")
+        print("Why: a CLI write can race a server append or atomic trim and lose data.")
+        print("Fix: stop the server, or use a different --file.")
+        return 1
 
     try:
         max_requests = args.max if args.command == "serve" else None
@@ -353,3 +363,6 @@ def main(argv: list[str] | None = None) -> int:
         print("Why: the inbox file or one of its settings is invalid or inaccessible.")
         print("Fix: check --file, its permissions and the numeric options, then retry.")
         return 1
+    finally:
+        if lock is not None:
+            lock.release()

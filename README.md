@@ -117,7 +117,9 @@ the newest N requests by rewriting the file atomically.
 
 Only one `serve` process can write a given `--file`: an OS-level lock on
 `<file>.lock` is held for the server's lifetime, and a second server exits with a
-clear error. Read commands (`list`, `show`) still work while a server runs. A client that
+clear error. `clear`, `delete` and `import` also refuse to write while that lock is held, so a
+CLI command cannot race a server append; `list`, `show` and `export` remain readable.
+A client that
 disconnects before reading a response does not produce a server traceback; the
 request is captured first and only the response write is skipped.
 

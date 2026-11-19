@@ -123,3 +123,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: With --port 0 the OS assigns an ephemeral port, but the CLI printed the requested 0, giving users an unusable URL.
 - **Decision**: Derive the startup URL from server.server_address after binding, via InboxServer.url(); the CLI no longer formats the requested port itself.
 - **Consequences**: Fixed-port output is unchanged; ephemeral-port runs now print a connectable URL.
+
+### ADR-017: Guard CLI writes with the single-writer lock
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed delete succeeded while serve held the lock, so CLI writes could race server appends and atomic trims and lose data.
+- **Decision**: Acquire the same OS lock for clear, delete and import, refusing with Why/Fix when held; leave list, show and export unlocked.
+- **Consequences**: All processes that mutate an inbox are serialized; read commands stay available while the server runs.

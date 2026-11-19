@@ -263,6 +263,12 @@ class LockTests(unittest.TestCase):
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
+        stdout_silence = contextlib.redirect_stdout(io.StringIO())
+        stdout_silence.__enter__()
+        self.addCleanup(stdout_silence.__exit__, None, None, None)
+        stderr_silence = contextlib.redirect_stderr(io.StringIO())
+        stderr_silence.__enter__()
+        self.addCleanup(stderr_silence.__exit__, None, None, None)
         self.path = Path(tmp.name) / "inbox.jsonl"
 
     def test_lock_is_exclusive_and_releasable(self) -> None:
@@ -280,6 +286,37 @@ class LockTests(unittest.TestCase):
         self.assertTrue(holder.acquire())
         try:
             self.assertEqual(main(["--file", str(self.path), "serve"]), 1)
+        finally:
+            holder.release()
+
+    def test_cli_writes_refused_while_lock_is_held(self) -> None:
+        store = InboxStore(self.path)
+        store.append(make_request(id="abc"))
+        snapshot = Path(self.path).parent / "snapshot.json"
+        snapshot.write_text(
+            json.dumps({"format": "postbox-export", "version": 1, "requests": []}),
+            encoding="utf-8",
+        )
+        holder = SingleWriterLock(self.path)
+        self.assertTrue(holder.acquire())
+        try:
+            self.assertEqual(main(["--file", str(self.path), "delete", "abc"]), 1)
+            self.assertEqual(main(["--file", str(self.path), "clear"]), 1)
+            self.assertEqual(
+                main(["--file", str(self.path), "import", str(snapshot)]), 1
+            )
+            self.assertEqual([r.id for r in store.all()], ["abc"])
+        finally:
+            holder.release()
+
+    def test_read_commands_allowed_while_lock_is_held(self) -> None:
+        store = InboxStore(self.path)
+        store.append(make_request(id="abc"))
+        holder = SingleWriterLock(self.path)
+        self.assertTrue(holder.acquire())
+        try:
+            self.assertEqual(main(["--file", str(self.path), "list"]), 0)
+            self.assertEqual(main(["--file", str(self.path), "export"]), 0)
         finally:
             holder.release()
 
