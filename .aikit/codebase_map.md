@@ -8,9 +8,9 @@
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
-- **Total Top-Level Functions**: `16`
-- **Total Class Methods**: `137`
-- **Total Source Lines**: `1933`
+- **Total Top-Level Functions**: `17`
+- **Total Class Methods**: `140`
+- **Total Source Lines**: `1973`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `368` lines
+**Size**: `385` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -38,6 +38,7 @@
 - `def _in_time_window(request, after, before)`
 - `def is_loopback(host)` - *Return True for loopback names and addresses only.*
 - `def _non_negative_float(value)`
+- `def _add_global_flags(subparser)` - *Accept parent flags after the subcommand without overriding earlier values.*
 - `def _build_parser()`
 - `def _find_or_error(store, prefix)`
 - `def _replay(request, url, timeout, preserve_path)`
@@ -83,7 +84,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `278` lines
+**Size**: `283` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -150,7 +151,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `829` lines
+**Size**: `847` lines
 
 **Classes:**
 - `class ModelTests`
@@ -203,6 +204,7 @@
   - Method `.test_inspect_and_clear_endpoints()`
   - Method `.test_inbox_pagination()`
   - Method `.test_inbox_pagination_rejects_bad_values()`
+  - Method `.test_non_utf8_inbox_returns_json_500()`
   - Method `.test_health_endpoint()`
   - Method `.test_malformed_content_length_is_rejected()`
   - Method `.test_negative_content_length_is_rejected()`
@@ -224,6 +226,8 @@
   - Method `.setUp()`
   - Method `.test_list_and_show()`
   - Method `.test_list_filters_by_method_and_path()`
+  - Method `.test_global_flags_after_subcommand()`
+  - Method `.test_global_file_flag_after_subcommand()`
   - Method `.test_json_output_is_parseable()`
   - Method `.test_show_missing_returns_error()`
   - Method `.test_clear()`

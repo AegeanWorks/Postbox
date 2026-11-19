@@ -406,6 +406,14 @@ class ServerTests(unittest.TestCase):
         response = self._raw(b"GET /__inbox?limit=-1 HTTP/1.0\r\nHost: x\r\n\r\n")
         self.assertIn(b"400", response)
 
+    def test_non_utf8_inbox_returns_json_500(self) -> None:
+        self.store.path.write_bytes(
+            b'{"format":"postbox-inbox","version":1}\n{"id":"x","body_b64":"\xff"}\n'
+        )
+        response = self._raw(b"GET /__inbox HTTP/1.0\r\nHost: x\r\n\r\n")
+        self.assertIn(b"500", response)
+        self.assertIn(b"inbox error", response.lower())
+
     def test_health_endpoint(self) -> None:
         with urllib.request.urlopen(
             f"http://127.0.0.1:{self.port}/__health", timeout=5
@@ -582,6 +590,16 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             main(["--file", str(self.path), "list", "--path", "/hook"]), 0
         )
+
+    def test_global_flags_after_subcommand(self) -> None:
+        self.assertEqual(main(["--file", str(self.path), "list", "--json"]), 0)
+        self.assertEqual(len(json.loads(self._stdout.getvalue())), 3)
+
+    def test_global_file_flag_after_subcommand(self) -> None:
+        other = Path(self.path).parent / "other.jsonl"
+        InboxStore(other).append(make_request(id="other"))
+        main(["list", "--file", str(other), "--json"])
+        self.assertEqual(json.loads(self._stdout.getvalue())[0]["id"], "other")
 
     def test_json_output_is_parseable(self) -> None:
         self.assertEqual(main(["--file", str(self.path), "--json", "list"]), 0)

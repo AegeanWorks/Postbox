@@ -86,6 +86,15 @@ def _non_negative_float(value: str) -> float:
     return number
 
 
+def _add_global_flags(subparser: argparse.ArgumentParser) -> None:
+    """Accept parent flags after the subcommand without overriding earlier values."""
+    subparser.add_argument("--file", default=argparse.SUPPRESS, help="path to the JSONL inbox")
+    subparser.add_argument(
+        "--json", action="store_true", default=argparse.SUPPRESS,
+        help="emit machine-readable JSON",
+    )
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="postbox",
@@ -111,6 +120,7 @@ def _build_parser() -> argparse.ArgumentParser:
     serve_parser.add_argument(
         "--max", type=_positive_int, default=None, help="keep only the newest N requests"
     )
+    _add_global_flags(serve_parser)
 
     list_parser = sub.add_parser("list", help="list captured request ids")
     list_parser.add_argument("--method", help="keep only this HTTP method")
@@ -120,20 +130,26 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     list_parser.add_argument("--after", type=_iso_time, default=None, help="ISO time lower bound")
     list_parser.add_argument("--before", type=_iso_time, default=None, help="ISO time upper bound")
+    _add_global_flags(list_parser)
 
     show_parser = sub.add_parser("show", help="show one captured request")
     show_parser.add_argument("id", help="full id or unique prefix")
+    _add_global_flags(show_parser)
 
     delete_parser = sub.add_parser("delete", help="remove one captured request")
     delete_parser.add_argument("id", help="full id or unique prefix")
+    _add_global_flags(delete_parser)
 
-    sub.add_parser("clear", help="empty the inbox")
+    clear_parser = sub.add_parser("clear", help="empty the inbox")
+    _add_global_flags(clear_parser)
 
     export_parser = sub.add_parser("export", help="write a portable JSON snapshot")
     export_parser.add_argument("--output", default=None, help="write to FILE instead of stdout")
+    _add_global_flags(export_parser)
 
     import_parser = sub.add_parser("import", help="append a JSON snapshot to the inbox")
     import_parser.add_argument("snapshot", help="snapshot to import")
+    _add_global_flags(import_parser)
 
     replay_parser = sub.add_parser("replay", help="send a captured request to a URL")
     replay_parser.add_argument("id", help="full id or unique prefix")
@@ -145,6 +161,7 @@ def _build_parser() -> argparse.ArgumentParser:
     replay_parser.add_argument(
         "--timeout", type=_non_negative_float, default=10.0, help="timeout in seconds"
     )
+    _add_global_flags(replay_parser)
 
     return parser
 

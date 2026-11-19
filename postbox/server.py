@@ -17,7 +17,12 @@ from postbox.models import (
 from postbox.store import InboxStore, UnsupportedFormatError
 
 DEFAULT_MAX_BODY = 1_048_576  # 1 MiB
-_INBOX_ERRORS = (CorruptInboxError, UnsupportedFormatError, OSError)
+_INBOX_ERRORS = (
+    CorruptInboxError,
+    UnsupportedFormatError,
+    OSError,
+    UnicodeDecodeError,
+)
 
 
 class _BadChunkedBody(ValueError):

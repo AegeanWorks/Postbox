@@ -130,3 +130,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed delete succeeded while serve held the lock, so CLI writes could race server appends and atomic trims and lose data.
 - **Decision**: Acquire the same OS lock for clear, delete and import, refusing with Why/Fix when held; leave list, show and export unlocked.
 - **Consequences**: All processes that mutate an inbox are serialized; read commands stay available while the server runs.
+
+### ADR-018: Normalize inbox read errors and accept flags after subcommands
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A non-UTF-8 byte made the server drop the connection with a traceback instead of the documented JSON 500, and postbox list --json failed because global flags were parent-only.
+- **Decision**: Include UnicodeDecodeError in the server's inbox error tuple, and accept --file/--json after each subcommand using suppressed defaults so earlier values are preserved.
+- **Consequences**: Every inbox read failure is a JSON 500, and either flag placement works without changing the pre-subcommand form.

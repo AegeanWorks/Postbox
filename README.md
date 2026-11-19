@@ -39,6 +39,7 @@ python -m unittest discover -s tests
 - **Delete one**: `python -m postbox.cli --file inbox.jsonl delete <id>`
 - **Clear**: `python -m postbox.cli --file inbox.jsonl clear`
 - **Agent-friendly output**: `python -m postbox.cli --file inbox.jsonl --json list --method POST --path /hook`
+- **Flag placement**: `--file` and `--json` also work after the subcommand, e.g. `postbox list --json`
 - **Time window**: `python -m postbox.cli --file inbox.jsonl list --after 2026-11-19 --before 2026-11-20`
 - **Portable snapshot**: `python -m postbox.cli --file inbox.jsonl export --output snapshot.json`
 - **Restore snapshot**: `python -m postbox.cli --file other.jsonl import snapshot.json`
@@ -111,7 +112,7 @@ Bodies above
 are decoded with the same cumulative size limit; malformed chunk framing gets
 `400`. Malformed or negative `Content-Length` also gets `400`, as does a body
 that is shorter than the declared length; incomplete bodies are never stored.
-A corrupt inbox
+A corrupt or non-UTF-8 inbox
 produces a JSON `500` rather than a dropped connection. `serve --max N` keeps only
 the newest N requests by rewriting the file atomically.
 
