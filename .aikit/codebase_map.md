@@ -8,9 +8,9 @@
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
-- **Total Top-Level Functions**: `18`
-- **Total Class Methods**: `151`
-- **Total Source Lines**: `2144`
+- **Total Top-Level Functions**: `19`
+- **Total Class Methods**: `154`
+- **Total Source Lines**: `2207`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `437` lines
+**Size**: `460` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -38,6 +38,7 @@
 - `def _in_time_window(request, after, before)`
 - `def is_loopback(host)` - *Return True for loopback names and addresses only.*
 - `def _non_negative_float(value)`
+- `def _port(value)`
 - `def _add_global_flags(subparser)` - *Accept parent flags after the subcommand without overriding earlier values.*
 - `def _build_parser()`
 - `def _lookup_error(prefix, context, json_mode, ambiguous)` - *Report a failed lookup in the calling command's own language.*
@@ -85,7 +86,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `301` lines
+**Size**: `306` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -152,7 +153,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `948` lines
+**Size**: `983` lines
 
 **Classes:**
 - `class ModelTests`
@@ -200,6 +201,7 @@
   - Method `._stop_server()`
   - Method `._raw(payload)`
   - Method `._post(path, payload)`
+  - Method `.test_ipv6_loopback_binds_and_brackets_url()`
   - Method `.test_url_reports_the_bound_port()`
   - Method `.test_request_is_captured()`
   - Method `.test_inspect_and_clear_endpoints()`
@@ -255,10 +257,12 @@
   - Method `.test_version_flag()`
   - Method `.test_loopback_detection()`
   - Method `.test_non_loopback_host_is_refused()`
+  - Method `.test_serve_rejects_out_of_range_port()`
   - Method `.test_invalid_numeric_flags_return_error()`
   - Method `.test_replay_error_is_machine_readable_under_json()`
   - Method `.test_bad_replay_url_returns_error()`
   - Method `.test_replay_json_output()`
+  - Method `.test_replay_preserves_duplicate_headers()`
   - Method `.test_replay_sends_body_for_delete()`
   - Method `._replay_target(request_id, extra)`
   - Method `.test_replay_preserves_captured_path_and_query()`

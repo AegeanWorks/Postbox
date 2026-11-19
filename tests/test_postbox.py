@@ -362,6 +362,18 @@ class ServerTests(unittest.TestCase):
         with urllib.request.urlopen(request, timeout=5) as response:
             return response.read().decode()
 
+    def test_ipv6_loopback_binds_and_brackets_url(self) -> None:
+        try:
+            v6_dir = tempfile.TemporaryDirectory()
+            self.addCleanup(v6_dir.cleanup)
+            server = InboxServer(("::1", 0), InboxStore(Path(v6_dir.name) / "v6.jsonl"))
+        except OSError as exc:
+            self.skipTest(f"IPv6 unavailable: {exc}")
+        try:
+            self.assertTrue(server.url().startswith("http://[::1]:"))
+        finally:
+            server.server_close()
+
     def test_url_reports_the_bound_port(self) -> None:
         self.assertIn(f":{self.port}", self.server.url())
         self.assertTrue(self.server.url().startswith("http://"))
@@ -799,6 +811,12 @@ class CliTests(unittest.TestCase):
             main(["--file", str(self.path), "serve", "--host", "0.0.0.0"]), 2
         )
 
+    def test_serve_rejects_out_of_range_port(self) -> None:
+        self.assertEqual(
+            main(["--file", str(self.path), "serve", "--port", "99999"]), 2
+        )
+        self.assertEqual(main(["--file", str(self.path), "serve", "--port", "-1"]), 2)
+
     def test_invalid_numeric_flags_return_error(self) -> None:
         self.assertEqual(main(["--file", str(self.path), "serve", "--max", "0"]), 2)
         self.assertEqual(main(["--file", str(self.path), "list", "--limit", "-1"]), 2)
@@ -838,6 +856,23 @@ class CliTests(unittest.TestCase):
             server.shutdown()
             server.server_close()
             thread.join(timeout=2)
+
+    def test_replay_preserves_duplicate_headers(self) -> None:
+        self.store.append(
+            make_request(
+                id="dupheaders",
+                headers=(
+                    ("X-Event", "first"),
+                    ("X-Event", "second"),
+                    ("Content-Type", "application/json"),
+                ),
+            )
+        )
+        replayed = self._replay_target("dupheaders")
+        self.assertEqual(
+            [value for key, value in replayed.headers if key.lower() == "x-event"],
+            ["first", "second"],
+        )
 
     def test_replay_sends_body_for_delete(self) -> None:
         target_store = InboxStore(Path(self.path).parent / "target.jsonl")

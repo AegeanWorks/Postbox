@@ -179,3 +179,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed a snapshot with the same id twice created ambiguous records, and two conflicting Content-Length values were accepted with a truncated body.
 - **Decision**: Track seen ids while importing so duplicates inside a snapshot are skipped, and reject any request carrying more than one Content-Length header with 400.
 - **Consequences**: Imports cannot create unusable ambiguous ids; smuggling-shaped requests are refused before capture.
+
+### ADR-025: Validate ports, preserve repeated headers and support IPv6 loopback
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed an out-of-range port crashed with OverflowError, replay dropped a repeated header, and ::1 could not bind despite being recognized as loopback.
+- **Decision**: Validate ports in argparse to 0..65535, replay headers as ordered pairs through http.client, and select AF_INET6 for colon hosts with a bracketed URL.
+- **Consequences**: Port typos get a friendly error, repeated webhook headers replay faithfully, and IPv6 loopback works; replay no longer follows redirects automatically.

@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import http.client
 import ipaddress
 import json
-from datetime import datetime, timezone
 import urllib.parse
-import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
-from urllib.error import URLError
 
 from postbox import __version__
 from postbox.lock import SingleWriterLock
@@ -86,6 +85,16 @@ def _non_negative_float(value: str) -> float:
     return number
 
 
+def _port(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be an integer") from exc
+    if not 0 <= number <= 65535:
+        raise argparse.ArgumentTypeError("must be in 0..65535")
+    return number
+
+
 def _add_global_flags(subparser: argparse.ArgumentParser) -> None:
     """Accept parent flags after the subcommand without overriding earlier values."""
     subparser.add_argument("--file", default=argparse.SUPPRESS, help="path to the JSONL inbox")
@@ -108,7 +117,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     serve_parser = sub.add_parser("serve", help="listen for incoming requests")
-    serve_parser.add_argument("--port", type=int, default=8787)
+    serve_parser.add_argument("--port", type=_port, default=8787)
     serve_parser.add_argument("--host", default="127.0.0.1")
     serve_parser.add_argument(
         "--allow-public", action="store_true", help="allow binding a non-loopback address"
@@ -231,32 +240,46 @@ def _replay(
             target_url = urllib.parse.urlunparse(
                 (parsed.scheme, parsed.netloc, request.path or parsed.path, "", query, "")
             )
-        headers = {
-            key: value
-            for key, value in request.headers
-            if key.lower() not in _HOP_BY_HOP
-            and key.lower() not in SENSITIVE_HEADERS
+        headers = [
+            (name, value)
+            for name, value in request.headers
+            if name.lower() not in _HOP_BY_HOP
+            and name.lower() not in SENSITIVE_HEADERS
             and value != REDACTED
-        }
-        target = urllib.request.Request(
-            target_url, data=request.body, headers=headers, method=request.method
-        )
-        with urllib.request.urlopen(target, timeout=timeout) as response:
-            if json_mode:
-                print(
-                    json.dumps(
-                        {
-                            "method": request.method,
-                            "url": target_url,
-                            "status": response.status,
-                        },
-                        ensure_ascii=False,
-                    )
+        ]
+        target = urllib.parse.urlparse(target_url)
+        selector = target.path or "/"
+        if target.query:
+            selector += "?" + target.query
+        if target.scheme == "https":
+            connection = http.client.HTTPSConnection(
+                target.hostname, target.port or 443, timeout=timeout
+            )
+        else:
+            connection = http.client.HTTPConnection(
+                target.hostname, target.port or 80, timeout=timeout
+            )
+        connection.putrequest(request.method, selector, skip_accept_encoding=True)
+        for name, value in headers:
+            connection.putheader(name, value)
+        if request.body:
+            connection.putheader("Content-Length", str(len(request.body)))
+        connection.endheaders(request.body if request.body else None)
+        response = connection.getresponse()
+        status = response.status
+        response.read()
+        connection.close()
+        if json_mode:
+            print(
+                json.dumps(
+                    {"method": request.method, "url": target_url, "status": status},
+                    ensure_ascii=False,
                 )
-            else:
-                print(f"{request.method} {target_url} -> {response.status}")
-            return 0
-    except (URLError, OSError, ValueError) as exc:
+            )
+        else:
+            print(f"{request.method} {target_url} -> {status}")
+        return 0
+    except (http.client.HTTPException, OSError, ValueError) as exc:
         if json_mode:
             print(json.dumps({"error": "replay_failed", "detail": str(exc)}, ensure_ascii=False))
         else:

@@ -32,7 +32,7 @@ python -m unittest discover -s tests
 
 - **Project gate from the workspace root**: `python aikit.py check postbox --allow-dirty`
 - **Install as a command**: `pip install .` then `postbox --help`
-- **Start the inbox**: `python -m postbox.cli serve --port 8787` (`--port 0` prints the OS-assigned port)
+- **Start the inbox**: `python -m postbox.cli serve --port 8787` (`--port 0` prints the OS-assigned port; ports are validated to 0..65535)
 - **List captures**: `python -m postbox.cli --file inbox.jsonl list`
 - **Inspect one**: `python -m postbox.cli --file inbox.jsonl show <id>`
 - **Replay one**: `python -m postbox.cli --file inbox.jsonl replay <id> --url http://127.0.0.1:3000/hook`
@@ -151,7 +151,9 @@ Replay strips hop-by-hop headers (`host`, `content-length`, `connection`,
 `transfer-encoding`, `accept-encoding`) and sends the captured body for every
 method, including GET and DELETE. By default it uses exactly the URL you pass;
 `--preserve-path` instead combines that URL's scheme and host with the captured
-path and query, dropping any query value that was redacted. Id prefixes that
+path and query, dropping any query value that was redacted. Repeated headers are
+preserved by sending them individually rather than through a name-keyed header map.
+Id prefixes that
 match more than one request are refused rather than silently resolving to the
 first match. `list --after` and `list --before` accept ISO dates or datetimes
 and compare against `received_at` in UTC.
@@ -164,8 +166,9 @@ captures already in the target inbox and skips
 records whose id is already present in the target or duplicated in the snapshot,
 reporting both counts. Unknown versions
 are refused without modifying the file.
-It is a development tool: it binds to `127.0.0.1` by default, has no
-authentication, and is not meant to be exposed to the public internet.
+It is a development tool: it binds to `127.0.0.1` by default (IPv6 loopback
+`::1` is also supported), has no authentication, and is not meant to be exposed
+to the public internet.
 
 ## 📜 License
 

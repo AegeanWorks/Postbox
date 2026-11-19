@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import socket
 import urllib.parse
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -276,12 +277,16 @@ class InboxServer(ThreadingHTTPServer):
     ) -> None:
         self.store = store
         self.max_body = max_body
+        self.address_family = (
+            socket.AF_INET6 if ":" in address[0] else socket.AF_INET
+        )
         super().__init__(address, InboxHandler)
 
     def url(self) -> str:
         """Return the bound URL, including an OS-assigned port when requested."""
         host, port = self.server_address[:2]
-        return f"http://{host}:{port}"
+        shown = f"[{host}]" if ":" in host else host
+        return f"http://{shown}:{port}"
 
 
 def serve(
