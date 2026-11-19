@@ -8,9 +8,9 @@
 ## 📊 Codebase Metrics
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
-- **Total Top-Level Functions**: `17`
-- **Total Class Methods**: `140`
-- **Total Source Lines**: `1973`
+- **Total Top-Level Functions**: `18`
+- **Total Class Methods**: `143`
+- **Total Source Lines**: `2011`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `385` lines
+**Size**: `407` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -40,7 +40,8 @@
 - `def _non_negative_float(value)`
 - `def _add_global_flags(subparser)` - *Accept parent flags after the subcommand without overriding earlier values.*
 - `def _build_parser()`
-- `def _find_or_error(store, prefix)`
+- `def _lookup_error(prefix, context, json_mode, ambiguous)` - *Report a failed lookup in the calling command's own language.*
+- `def _find_or_error(store, prefix, context, json_mode)`
 - `def _replay(request, url, timeout, preserve_path)`
 - `def _dispatch(args, store)`
 - `def main(argv)` - *Run the CLI and return an exit code.*
@@ -151,7 +152,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `847` lines
+**Size**: `863` lines
 
 **Classes:**
 - `class ModelTests`
@@ -255,6 +256,9 @@
   - Method `.test_replay_preserves_captured_path_and_query()`
   - Method `.test_replay_preserve_path_omits_redacted_query()`
   - Method `.test_replay_does_not_send_redacted_headers()`
+  - Method `.test_show_error_is_not_replay_specific()`
+  - Method `.test_delete_error_is_not_replay_specific()`
+  - Method `.test_lookup_error_is_machine_readable_under_json()`
   - Method `.test_corrupt_inbox_gets_friendly_error()`
 
 **Functions:**

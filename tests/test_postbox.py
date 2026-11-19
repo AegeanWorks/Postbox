@@ -836,6 +836,22 @@ class CliTests(unittest.TestCase):
             server.server_close()
             thread.join(timeout=2)
 
+    def test_show_error_is_not_replay_specific(self) -> None:
+        main(["--file", str(self.path), "show", "nope"])
+        output = self._stdout.getvalue().lower()
+        self.assertNotIn("replay", output)
+        self.assertIn("show", output)
+
+    def test_delete_error_is_not_replay_specific(self) -> None:
+        main(["--file", str(self.path), "delete", "nope"])
+        self.assertNotIn("replay", self._stdout.getvalue().lower())
+
+    def test_lookup_error_is_machine_readable_under_json(self) -> None:
+        main(["--file", str(self.path), "--json", "show", "nope"])
+        payload = json.loads(self._stdout.getvalue())
+        self.assertEqual(payload["error"], "not_found")
+        self.assertEqual(payload["prefix"], "nope")
+
     def test_corrupt_inbox_gets_friendly_error(self) -> None:
         self.path.write_text(
             '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"

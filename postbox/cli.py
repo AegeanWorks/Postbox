@@ -166,18 +166,42 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _find_or_error(store: InboxStore, prefix: str) -> CapturedRequest | None:
+def _lookup_error(
+    prefix: str,
+    context: str,
+    json_mode: bool,
+    ambiguous: AmbiguousIdError | None = None,
+) -> None:
+    """Report a failed lookup in the calling command's own language."""
+    if json_mode:
+        payload = {
+            "error": "ambiguous_id" if ambiguous else "not_found",
+            "prefix": prefix,
+        }
+        if ambiguous is not None:
+            payload["matches"] = ambiguous.matches
+        print(json.dumps(payload, ensure_ascii=False))
+        return
+    if ambiguous is not None:
+        print(f"Ambiguous id '{prefix}': {ambiguous}")
+        print("Why: a short prefix can match several captured requests.")
+        print("Fix: use one of the listed full ids, or a longer unique prefix.")
+        return
+    print(f"No captured request starts with '{prefix}'.")
+    print(f"Why: {context} needs a request that exists in this inbox.")
+    print("Fix: run 'postbox list' to see available ids, or capture a request first.")
+
+
+def _find_or_error(
+    store: InboxStore, prefix: str, context: str = "replay", json_mode: bool = False
+) -> CapturedRequest | None:
     try:
         request = store.find(prefix)
     except AmbiguousIdError as exc:
-        print(f"Ambiguous id '{prefix}': {exc}")
-        print("Why: a short prefix can match several captured requests.")
-        print("Fix: use one of the listed full ids, or a longer unique prefix.")
+        _lookup_error(prefix, context, json_mode, exc)
         return None
     if request is None:
-        print(f"No captured request starts with '{prefix}'.")
-        print("Why: replay needs a request that exists in this inbox.")
-        print("Fix: run 'postbox list' to see available ids, or capture a request first.")
+        _lookup_error(prefix, context, json_mode)
     return request
 
 
@@ -266,7 +290,7 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
         return 0
 
     if args.command == "show":
-        request = _find_or_error(store, args.id)
+        request = _find_or_error(store, args.id, "show", args.json)
         if request is None:
             return 1
         if args.json:
@@ -278,19 +302,17 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
         return 0
 
     if args.command == "delete":
-        try:
-            removed = store.delete(args.id)
-        except AmbiguousIdError as exc:
-            print(f"Ambiguous id '{args.id}': {exc}")
-            print("Why: a short prefix can match several captured requests.")
-            print("Fix: use one of the listed full ids, or a longer unique prefix.")
+        target = _find_or_error(store, args.id, "delete", args.json)
+        if target is None:
             return 1
+        removed = store.delete(target.id)
         if removed is None:
-            print(f"No captured request starts with '{args.id}'.")
-            print("Why: there is nothing in this inbox to delete.")
-            print("Fix: run 'postbox list' to see available ids.")
+            _lookup_error(target.id, "delete", args.json)
             return 1
-        print(f"Deleted {removed.id}.")
+        if args.json:
+            print(json.dumps({"deleted": removed.id}, ensure_ascii=False))
+        else:
+            print(f"Deleted {removed.id}.")
         return 0
 
     if args.command == "clear":
@@ -336,7 +358,7 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
         return 0
 
     if args.command == "replay":
-        request = _find_or_error(store, args.id)
+        request = _find_or_error(store, args.id, "replay", args.json)
         if request is None:
             return 1
         return _replay(request, args.url, args.timeout, args.preserve_path)

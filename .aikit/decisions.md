@@ -137,3 +137,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A non-UTF-8 byte made the server drop the connection with a traceback instead of the documented JSON 500, and postbox list --json failed because global flags were parent-only.
 - **Decision**: Include UnicodeDecodeError in the server's inbox error tuple, and accept --file/--json after each subcommand using suppressed defaults so earlier values are preserved.
 - **Consequences**: Every inbox read failure is a JSON 500, and either flag placement works without changing the pre-subcommand form.
+
+### ADR-019: Context-aware, machine-readable lookup errors
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A shared lookup helper printed replay-specific guidance for show and delete, and emitted human text even with --json, breaking agent parsing.
+- **Decision**: Parameterise the helper with command context and JSON mode; emit not_found/ambiguous_id JSON objects under --json and use the calling command's name in human guidance.
+- **Consequences**: Agents can parse failures consistently; delete now validates through the same helper before removing by full id.
