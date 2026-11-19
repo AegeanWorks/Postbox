@@ -3,39 +3,18 @@
   "active_task": {
     "task_id": "postbox-timeoutclear",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795091826.675794,
     "owner": "opencode:postbox",
     "lease_until": 1795099026.675794,
     "started_by": "opencode:postbox",
-    "continuations": []
+    "continuations": [],
+    "completed_at": 1795091844.8780205,
+    "completed_head": "171bd71b3d8c2ac8ee130e447d5283538b261739",
+    "completed_tree": "b6655c77aa249c2c32c5b2ebbe15abaebefe3aec"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-allow",
-      "phase": "phase 2",
-      "phase_num": 2,
-      "description": "[1/2] Include Allow: POST, DELETE in the clear-endpoint 405 response",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795088569.0304258,
-      "timestamp_str": "2026-11-19 14:42:49",
-      "agent": "opencode:postbox",
-      "impact_assessment": {
-        "why": "A probe showed GET /__clear returns 405 without the Allow header required for that status.",
-        "benefits": "Clients can discover the supported clear methods from the response itself.",
-        "risks": "contract: an extra response header only; dependency: none; concurrency: none; state: none.",
-        "mitigation": "Add optional headers to _send_json, send Allow on the clear 405, and add a raw-socket failing-first test."
-      },
-      "plan_digest": "c319d12847634fb96bb41861bf9eff5ea3b7ae264a6a0ab3ee69daf4475a4a9f",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-allow",
       "phase": "phase 3",
@@ -340,6 +319,23 @@
       "timestamp_str": "2026-11-19 15:37:06",
       "agent": "opencode:postbox",
       "checklists": "passed"
+    },
+    {
+      "task_id": "postbox-timeoutclear",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-timeoutclear' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795091844.942768,
+      "timestamp_str": "2026-11-19 15:37:24",
+      "agent": "opencode:postbox",
+      "head": "171bd71b3d8c2ac8ee130e447d5283538b261739",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
