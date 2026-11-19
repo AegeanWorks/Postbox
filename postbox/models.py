@@ -73,6 +73,14 @@ class CapturedRequest:
     received_at: str
     query: str = ""
 
+    def __post_init__(self) -> None:
+        try:
+            datetime.fromisoformat(self.received_at.replace("Z", "+00:00"))
+        except (ValueError, AttributeError) as exc:
+            raise CorruptInboxError(
+                "received_at must be an ISO-8601 timestamp"
+            ) from exc
+
     def to_dict(self) -> dict:
         """Return a JSON-safe representation (body is base64 encoded)."""
         return {

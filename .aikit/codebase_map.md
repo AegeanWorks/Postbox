@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `15`
 - **Total Top-Level Functions**: `16`
-- **Total Class Methods**: `126`
-- **Total Source Lines**: `1787`
+- **Total Class Methods**: `130`
+- **Total Source Lines**: `1817`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -62,11 +62,12 @@
 ### [`postbox/models.py`](postbox/models.py)
 > *The captured-request value object.*
 
-**Size**: `146` lines
+**Size**: `154` lines
 
 **Classes:**
 - `class CorruptInboxError` - *A record in the inbox cannot be decoded safely.*
 - `class CapturedRequest` - *An immutable record of one HTTP request received by the inbox.*
+  - Method `.__post_init__()`
   - Method `.to_dict()` - *Return a JSON-safe representation (body is base64 encoded).*
   - Method `.from_dict(data)` - *Rebuild a request from its JSON-safe representation.*
   - Method `.text()` - *Return the body decoded as UTF-8, replacing invalid bytes.*
@@ -148,7 +149,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `727` lines
+**Size**: `749` lines
 
 **Classes:**
 - `class ModelTests`
@@ -156,6 +157,8 @@
   - Method `.test_text_decodes_body()`
   - Method `.test_header_lookup_is_case_insensitive()`
   - Method `.test_corrupt_base64_is_refused()`
+  - Method `.test_invalid_timestamp_is_refused()`
+  - Method `.test_z_suffix_timestamp_is_accepted()`
   - Method `.test_missing_record_key_is_refused()`
   - Method `.test_sensitive_headers_are_redacted()`
   - Method `.test_sensitive_query_keys_are_redacted()`
@@ -226,6 +229,7 @@
   - Method `.test_import_preserves_existing_records()`
   - Method `.test_import_skips_duplicate_ids()`
   - Method `.test_import_refuses_unknown_version()`
+  - Method `.test_import_refuses_bad_timestamp()`
   - Method `.test_import_refuses_bad_record()`
   - Method `.test_list_filters_by_time()`
   - Method `.test_invalid_time_filter_returns_error()`

@@ -66,6 +66,14 @@ class ModelTests(unittest.TestCase):
         with self.assertRaises(CorruptInboxError):
             CapturedRequest.from_dict(data)
 
+    def test_invalid_timestamp_is_refused(self) -> None:
+        with self.assertRaises(CorruptInboxError):
+            CapturedRequest("x", "GET", "/x", (), b"", "not-a-timestamp")
+
+    def test_z_suffix_timestamp_is_accepted(self) -> None:
+        record = CapturedRequest("x", "GET", "/x", (), b"", "2026-11-19T10:00:00Z")
+        self.assertEqual(record.received_at, "2026-11-19T10:00:00Z")
+
     def test_missing_record_key_is_refused(self) -> None:
         with self.assertRaises(CorruptInboxError):
             CapturedRequest.from_dict({"id": "x"})
@@ -571,6 +579,20 @@ class CliTests(unittest.TestCase):
         export_path = Path(self.path).parent / "bad-version.json"
         export_path.write_text(
             json.dumps({"format": "postbox-export", "version": 99, "requests": []}),
+            encoding="utf-8",
+        )
+        self.assertEqual(
+            main(["--file", str(self.path), "import", str(export_path)]), 1
+        )
+
+    def test_import_refuses_bad_timestamp(self) -> None:
+        export_path = Path(self.path).parent / "bad-time.json"
+        record = make_request(id="badt").to_dict()
+        record["received_at"] = "not-a-timestamp"
+        export_path.write_text(
+            json.dumps(
+                {"format": "postbox-export", "version": 1, "requests": [record]}
+            ),
             encoding="utf-8",
         )
         self.assertEqual(

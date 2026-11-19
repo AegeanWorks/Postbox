@@ -144,7 +144,9 @@ and compare against `received_at` in UTC.
 
 `export` writes a versioned `postbox-export` JSON envelope to stdout or
 `--output`; `import` validates the format and version before appending the
-records atomically. It preserves captures already in the target inbox and skips
+records atomically. Every record must carry an ISO-8601 `received_at` (a trailing
+`Z` is accepted); snapshots with invalid timestamps are refused. It preserves
+captures already in the target inbox and skips
 records whose id is already present, reporting both counts. Unknown versions
 are refused without modifying the file.
 It is a development tool: it binds to `127.0.0.1` by default, has no

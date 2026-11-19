@@ -95,3 +95,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed a client declaring 100 bytes but sending 3 got 200, and the partial body was stored as if complete, corrupting replays and analysis.
 - **Decision**: Compare the received byte count with Content-Length before constructing a record; return 400 and capture nothing on a mismatch.
 - **Consequences**: Every stored body matches its declared length. Clients that close early now get an explicit error instead of a silently truncated capture.
+
+### ADR-013: Validate capture timestamps at construction
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A record with received_at='not-a-timestamp' could be stored or imported, after which a single such record made every time-filtered list fail with a misleading file/permissions error.
+- **Decision**: Parse received_at as ISO-8601 in CapturedRequest.__post_init__, accepting a trailing Z, and raise CorruptInboxError otherwise.
+- **Consequences**: Bad snapshots are refused at import and corrupt records cannot enter the inbox; time filtering is guaranteed to parse every stored record.
