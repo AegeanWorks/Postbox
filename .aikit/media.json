@@ -15,17 +15,31 @@
   "assets": {
     "logo": {
       "path": "assets/logo.svg",
-      "status": "pending_review",
+      "status": "approved",
       "commit": "",
       "generated_at": "2026-11-19T00:12:47",
-      "review": null
+      "review": {
+        "status": "approved",
+        "reviewer": "agent:opencode",
+        "method": "structural",
+        "notes": "Valid 512x512 SVG with AegeanWorks gradient, project pulse motif, and PO monogram.",
+        "score": 85,
+        "reviewed_at": "2026-11-19T20:42:50"
+      }
     },
     "social_preview": {
       "path": "assets/social-preview.svg",
-      "status": "pending_review",
+      "status": "approved",
       "commit": "",
       "generated_at": "2026-11-19T00:12:47",
-      "review": null
+      "review": {
+        "status": "approved",
+        "reviewer": "agent:opencode",
+        "method": "structural",
+        "notes": "Valid 1280x640 SVG with correct title, description, AegeanWorks branding and repository URL.",
+        "score": 85,
+        "reviewed_at": "2026-11-19T20:42:52"
+      }
     }
   },
   "screenshots": []

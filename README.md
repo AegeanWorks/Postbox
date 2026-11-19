@@ -1,7 +1,8 @@
 # Postbox
 
 <!-- aegean:media:start -->
-<p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/license-AL--1.1-1c7ed6" alt="License"></a> <a href="https://github.com/AegeanWorks/AIKit"><img src="https://img.shields.io/badge/AIKit-integrated-6f42c1" alt="AIKit Integrated"></a></p>
+<p align="center"><img src="assets/social-preview.svg" alt="Postbox social preview" width="100%"></p>
+<p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/license-AL--1.1-2f9e44" alt="License"></a> <a href="https://github.com/AegeanWorks/AIKit"><img src="https://img.shields.io/badge/AIKit-integrated-6f42c1" alt="AIKit Integrated"></a></p>
 <!-- aegean:media:end -->
 
 A local webhook inbox with replay. Point a webhook at it, inspect what arrived,
@@ -184,6 +185,12 @@ are refused without modifying the file.
 It is a development tool: it binds to `127.0.0.1` by default (IPv6 loopback
 `::1` is also supported), has no authentication, and is not meant to be exposed
 to the public internet.
+
+<!-- aegean:brand-assets:start -->
+## 🎨 Brand Assets
+
+> **AI-Generated Brand Artwork.** The banner and logo are **AI-generated brand assets**. They are illustrative and may not literally depict every feature or the full project scope.
+<!-- aegean:brand-assets:end -->
 
 ## 📜 License
 
