@@ -6,14 +6,14 @@
 ---
 
 ## 📊 Codebase Metrics
-- **Total Python Modules**: `7`
+- **Total Python Modules**: `8`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `19`
-- **Total Class Methods**: `160`
-- **Total Source Lines**: `2299`
+- **Total Class Methods**: `163`
+- **Total Source Lines**: `2349`
 
 ## 🧭 Map Coverage
-- **Indexed**: python (`7` module(s))
+- **Indexed**: python (`8` module(s))
 - **Not indexed by this map**: none (no non-Python source files were found)
 
 ---
@@ -27,10 +27,17 @@
 
 ---
 
+### [`postbox/__main__.py`](postbox/__main__.py)
+> *Allow ``python -m postbox.cli`` to run the CLI as documented.*
+
+**Size**: `5` lines
+
+---
+
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `462` lines
+**Size**: `472` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -86,7 +93,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `315` lines
+**Size**: `318` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -153,7 +160,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `1064` lines
+**Size**: `1096` lines
 
 **Classes:**
 - `class ModelTests`
@@ -220,6 +227,7 @@
   - Method `.test_malformed_chunk_size_is_rejected()`
   - Method `.test_get_clear_is_a_noop()`
   - Method `.test_clear_with_malformed_content_length_is_rejected()`
+  - Method `.test_clear_rejects_truncated_body()`
   - Method `.test_clear_with_negative_content_length_is_rejected()`
   - Method `.test_clear_405_advertises_allowed_methods()`
   - Method `.test_read_only_methods_on_clear_are_noops()`
@@ -240,6 +248,7 @@
   - Method `.test_global_file_flag_after_subcommand()`
   - Method `.test_json_output_is_parseable()`
   - Method `.test_show_missing_returns_error()`
+  - Method `.test_python_m_entrypoint_works()`
   - Method `.test_clear()`
   - Method `.test_clear_json_output()`
   - Method `.test_import_json_output()`
@@ -277,6 +286,7 @@
   - Method `.test_show_error_is_not_replay_specific()`
   - Method `.test_delete_error_is_not_replay_specific()`
   - Method `.test_lookup_error_is_machine_readable_under_json()`
+  - Method `.test_clear_can_remove_corrupt_inbox()`
   - Method `.test_corrupt_inbox_gets_friendly_error()`
 
 **Functions:**

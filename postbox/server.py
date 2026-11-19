@@ -178,7 +178,10 @@ class InboxHandler(BaseHTTPRequestHandler):
         # Drain a bounded prefix so the client finishes its write before we
         # answer; closing early aborts the client's send (WinError 10053).
         if length > 0:
-            self.rfile.read(min(length, 16 * 1024 * 1024))
+            received = self.rfile.read(min(length, 16 * 1024 * 1024))
+            if len(received) < length:
+                self._bad_request("incomplete request body")
+                return
         try:
             self.store.clear()
         except _INBOX_ERRORS as exc:

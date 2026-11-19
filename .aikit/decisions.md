@@ -200,3 +200,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed --timeout inf crashed with OverflowError, and malformed or negative Content-Length on POST /__clear silently wiped the inbox while capture rejected the same input.
 - **Decision**: Validate --timeout as finite and bounded, catch OverflowError as a backstop, and apply capture's Content-Length checks before any clear.
 - **Consequences**: Invalid timeouts get friendly errors, and a malformed clear cannot destroy captures.
+
+### ADR-028: Make documented entry point run and harden clear paths
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed python -m postbox.cli was a silent no-op, a truncated clear body wiped the inbox, and CLI clear refused the corrupt file it should fix.
+- **Decision**: Add a __main__ guard and package __main__.py, reject short clear bodies like capture does, and let CLI clear succeed without decoding a corrupt inbox.
+- **Consequences**: Documented commands work, malformed clear requests leave captures intact, and a corrupt inbox can be cleared from either CLI or HTTP.

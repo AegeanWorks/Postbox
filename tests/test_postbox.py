@@ -6,6 +6,8 @@ import contextlib
 import io
 import json
 import socket
+import subprocess
+import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import tempfile
 import threading
@@ -543,6 +545,18 @@ class ServerTests(unittest.TestCase):
         self.assertIn(b"400", response)
         self.assertEqual(self.store.count(), 1)
 
+    def test_clear_rejects_truncated_body(self) -> None:
+        self._post("/hook", b"data")
+        with socket.create_connection(("127.0.0.1", self.port), timeout=5) as sock:
+            sock.settimeout(5)
+            sock.sendall(
+                b"POST /__clear HTTP/1.0\r\nHost: x\r\nContent-Length: 50\r\n\r\nabc"
+            )
+            sock.shutdown(socket.SHUT_WR)
+            response = sock.recv(4096)
+        self.assertIn(b"400", response)
+        self.assertEqual(self.store.count(), 1)
+
     def test_clear_with_negative_content_length_is_rejected(self) -> None:
         self._post("/hook", b"data")
         response = self._raw(
@@ -686,6 +700,16 @@ class CliTests(unittest.TestCase):
 
     def test_show_missing_returns_error(self) -> None:
         self.assertEqual(main(["--file", str(self.path), "show", "nope"]), 1)
+
+    def test_python_m_entrypoint_works(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-m", "postbox.cli", "--file", str(self.path), "list"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("abc123", result.stdout)
 
     def test_clear(self) -> None:
         self.assertEqual(main(["--file", str(self.path), "clear"]), 0)
@@ -1052,6 +1076,14 @@ class CliTests(unittest.TestCase):
         payload = json.loads(self._stdout.getvalue())
         self.assertEqual(payload["error"], "not_found")
         self.assertEqual(payload["prefix"], "nope")
+
+    def test_clear_can_remove_corrupt_inbox(self) -> None:
+        self.path.write_text(
+            '{"format":"postbox-inbox","version":1}\nnot-json\n', encoding="utf-8"
+        )
+        self.assertEqual(main(["--file", str(self.path), "clear"]), 0)
+        self.assertEqual(self.path.read_text(encoding="utf-8"),
+                         '{"format": "postbox-inbox", "version": 1}\n')
 
     def test_corrupt_inbox_gets_friendly_error(self) -> None:
         self.path.write_text(

@@ -360,10 +360,16 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
         return 0
 
     if args.command == "clear":
-        count = store.count()
+        # Clearing needs no decode, so a corrupt inbox can be repaired here.
+        try:
+            count: int | None = store.count()
+        except (CorruptInboxError, UnsupportedFormatError, UnicodeDecodeError):
+            count = None
         store.clear()
         if args.json:
             print(json.dumps({"cleared": count}))
+        elif count is None:
+            print("Cleared inbox (record count unknown).")
         else:
             print(f"Cleared {count} captured request(s).")
         return 0
@@ -460,3 +466,7 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         if lock is not None:
             lock.release()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

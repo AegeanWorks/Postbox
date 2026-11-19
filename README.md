@@ -78,6 +78,7 @@ postbox/
 ├── pyproject.toml            <- package metadata and console script
 ├── postbox/                  <- package
 │   ├── __init__.py           <- version marker
+│   ├── __main__.py           <- python -m postbox entry point
 │   ├── lock.py               <- cross-platform single-writer OS lock
 │   ├── models.py             <- immutable CapturedRequest and JSON/base64 codec
 │   ├── store.py              <- versioned append-only JSONL, atomic writes, retention
@@ -115,7 +116,9 @@ Only `POST /__clear` and `DELETE /__clear` clear the inbox; every other method,
 including HEAD and OPTIONS, returns `405` with `Allow: POST, DELETE` so a prefetch
 cannot destroy captures and clients can discover the supported methods. The same
 `Content-Length` validation as capture applies to clear, so malformed framing gets
-`400` before anything is removed.
+`400` before anything is removed, including a body shorter than the declared
+length. CLI `clear` can also remove a corrupt inbox; in that case the reported
+count is `null`.
 Bodies above
 `--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies
 are decoded with the same cumulative size limit; malformed chunk framing gets
