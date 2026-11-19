@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-jsonout",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795087793.2041285,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,26 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795087836.0107648,
+    "completed_head": "eff9cfefa122fddf2ad8939d957fa5907d28545f",
+    "completed_tree": "501bef9bf5baa8495b5354bfcfe76d9df4fdef65"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-port",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-port' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795085991.6778395,
-      "timestamp_str": "2026-11-19 13:59:51",
-      "agent": "opencode:postbox",
-      "head": "61f01b2e007ff25fa9d5ece9d5576243682dc008",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-writelock",
       "phase": "phase 2",
@@ -400,6 +386,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-jsonout",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-jsonout' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795087836.111642,
+      "timestamp_str": "2026-11-19 14:30:36",
+      "agent": "opencode:postbox",
+      "head": "eff9cfefa122fddf2ad8939d957fa5907d28545f",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
