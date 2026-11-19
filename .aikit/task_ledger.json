@@ -3,32 +3,18 @@
   "active_task": {
     "task_id": "postbox-cleardrain",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795095108.7936113,
     "owner": "opencode:postbox",
     "lease_until": 1795102308.7936113,
     "started_by": "opencode:postbox",
-    "continuations": []
+    "continuations": [],
+    "completed_at": 1795095125.9367018,
+    "completed_head": "360b9efe114ec3e7f68f97aaceea5bc2fde23548",
+    "completed_tree": "ca5efdd293ebc4c2fc13b9d3146d54ec5bb4b8b4"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-ack",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-ack' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795091057.6695473,
-      "timestamp_str": "2026-11-19 15:24:17",
-      "agent": "opencode:postbox",
-      "head": "77be2d3a56fc01664e7c449f49a9962fd392f671",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "postbox-timeoutclear",
       "phase": "in_progress",
@@ -301,6 +287,23 @@
       "timestamp_str": "2026-11-19 16:31:48",
       "agent": "opencode:postbox",
       "checklists": "passed"
+    },
+    {
+      "task_id": "postbox-cleardrain",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-cleardrain' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795095126.004686,
+      "timestamp_str": "2026-11-19 16:32:06",
+      "agent": "opencode:postbox",
+      "head": "360b9efe114ec3e7f68f97aaceea5bc2fde23548",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
