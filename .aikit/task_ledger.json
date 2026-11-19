@@ -1,56 +1,31 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-reforge-final",
-    "last_phase": "in_progress",
+    "task_id": "probe-fix",
+    "last_phase": "phase 5",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1795108938.33918,
-    "owner": "opencode:postbox",
-    "lease_until": 1795116138.33918,
-    "started_by": "opencode:postbox",
+    "updated_at": 1795109215.8186455,
+    "owner": "opencode:probe",
+    "lease_until": 1795116415.8186455,
+    "started_by": "opencode:probe",
     "continuations": [],
-    "completed_at": 1795108939.460642,
-    "completed_head": "8667dc102897780688a09275a5800bbb0c12ca38",
-    "completed_tree": "9c0e446b59edba805664aadfd27cc4873bbdf85f"
+    "workspaces": [
+      {
+        "name": "postbox",
+        "path": "projects/postbox"
+      }
+    ],
+    "forced_completion": {
+      "agent": "opencode:probe",
+      "reason": "probe checkpoint from AIKit behavior analysis verification; not real work",
+      "at": 1795109217.2833765
+    },
+    "completed_at": 1795109217.283378,
+    "completed_head": "df87c9ef9382f75a1f4f941a80e867d30455f42d",
+    "completed_tree": "048a2c50912c983ede487683e95d4b4fa7ad51a4"
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-1",
-      "phase": "reforge stage 14",
-      "phase_num": 3,
-      "description": "Reforge stage 14: stage 14 host review reviewed; run active; coverage 8/8",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795108131.2897248,
-      "timestamp_str": "2026-11-19 20:08:51",
-      "agent": "opencode",
-      "operator_task": "postbox-reforge"
-    },
-    {
-      "task_id": "reforge:run-1",
-      "phase": "reforge stage 15",
-      "phase_num": 3,
-      "description": "Reforge stage 15: window 45, 3 commit(s), 6 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795108191.1992614,
-      "timestamp_str": "2026-11-19 20:09:51",
-      "agent": "opencode",
-      "operator_task": "postbox-reforge"
-    },
-    {
-      "task_id": "reforge:run-1",
-      "phase": "reforge stage 15",
-      "phase_num": 3,
-      "description": "Reforge stage 15: stage 15 host review reviewed; run active; coverage 18/18",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795108201.699049,
-      "timestamp_str": "2026-11-19 20:10:01",
-      "agent": "opencode",
-      "operator_task": "postbox-reforge"
-    },
     {
       "task_id": "reforge:run-1",
       "phase": "reforge stage 16",
@@ -263,6 +238,63 @@
           "."
         ],
         "forced": false
+      }
+    },
+    {
+      "task_id": "probe-fix",
+      "phase": "phase 2",
+      "phase_num": 2,
+      "description": "probe",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795109158.177345,
+      "timestamp_str": "2026-11-19 20:25:58",
+      "agent": "opencode:probe",
+      "impact_assessment": {
+        "why": "w",
+        "benefits": "b",
+        "risks": "contract: none; dependency: none; concurrency: none; state: none",
+        "mitigation": "m"
+      },
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "probe-fix",
+      "phase": "phase 5",
+      "phase_num": 5,
+      "description": "probe cleanup - superseded",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795109215.8186455,
+      "timestamp_str": "2026-11-19 20:26:55",
+      "agent": "opencode:probe",
+      "workspaces": [
+        {
+          "name": "postbox",
+          "path": "projects/postbox"
+        }
+      ]
+    },
+    {
+      "task_id": "probe-fix",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'probe-fix' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795109218.1513002,
+      "timestamp_str": "2026-11-19 20:26:58",
+      "agent": "opencode:probe",
+      "head": "df87c9ef9382f75a1f4f941a80e867d30455f42d",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": true
       }
     }
   ]
