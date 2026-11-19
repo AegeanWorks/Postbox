@@ -1,66 +1,20 @@
 {
   "version": 1,
   "active_task": {
-    "task_id": "postbox-reforge",
+    "task_id": "postbox-reforge-final",
     "last_phase": "in_progress",
     "active_phase": 5,
     "status": "completed",
-    "updated_at": 1795106620.1287377,
+    "updated_at": 1795108938.33918,
     "owner": "opencode:postbox",
-    "lease_until": 1795113820.1287377,
+    "lease_until": 1795116138.33918,
     "started_by": "opencode:postbox",
     "continuations": [],
-    "completed_at": 1795106634.3140411,
-    "completed_head": "524af16bf08049a126bc74315f5141bac22f7732",
-    "completed_tree": "b8b10a70306f35dbb92c21005e36b1858ef33851"
+    "completed_at": 1795108939.460642,
+    "completed_head": "8667dc102897780688a09275a5800bbb0c12ca38",
+    "completed_tree": "9c0e446b59edba805664aadfd27cc4873bbdf85f"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-reforge",
-      "phase": "in_progress",
-      "phase_num": 2,
-      "description": "Reforge run-1: audit postbox history and apply accepted findings",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795106619.7567937,
-      "timestamp_str": "2026-11-19 19:43:39",
-      "agent": "opencode:postbox",
-      "impact_assessment": {
-        "why": "The user asked to run Reforge on Postbox; the active run must own the commits it creates.",
-        "benefits": "Auditable history review with attributed repairs and a clean delivery ledger.",
-        "risks": "contract: none; dependency: none; concurrency: none; state: repairs are committed by Reforge/gates.",
-        "mitigation": "Review each packet with full hunk coverage, apply only safe repairs, and verify with check --strict."
-      }
-    },
-    {
-      "task_id": "postbox-reforge",
-      "phase": "in_progress",
-      "phase_num": 4,
-      "description": "Reforge stage 1 reviewed and repaired",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795106620.1287377,
-      "timestamp_str": "2026-11-19 19:43:40",
-      "agent": "opencode:postbox",
-      "checklists": "passed"
-    },
-    {
-      "task_id": "postbox-reforge",
-      "phase": "completed",
-      "phase_num": 5,
-      "description": "Task 'postbox-reforge' completed successfully.",
-      "status": "completed",
-      "timestamp": 1795106634.639914,
-      "timestamp_str": "2026-11-19 19:43:54",
-      "agent": "opencode:postbox",
-      "head": "524af16bf08049a126bc74315f5141bac22f7732",
-      "delivery": {
-        "roots": [
-          "."
-        ],
-        "forced": false
-      }
-    },
     {
       "task_id": "reforge:run-1",
       "phase": "reforge stage 14",
@@ -264,6 +218,52 @@
       "timestamp_str": "2026-11-19 20:20:09",
       "agent": "opencode",
       "operator_task": "postbox-reforge"
+    },
+    {
+      "task_id": "postbox-reforge-final",
+      "phase": "in_progress",
+      "phase_num": 2,
+      "description": "Complete Reforge run-1 across all 66 commits",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795108937.787366,
+      "timestamp_str": "2026-11-19 20:22:17",
+      "agent": "opencode:postbox",
+      "impact_assessment": {
+        "why": "The user asked to run Reforge; the final audit state needs an owning ledger task.",
+        "benefits": "Auditable completion of the full history review.",
+        "risks": "contract: none; dependency: none; concurrency: none; state: state files only.",
+        "mitigation": "Record the completion and verify with check --strict."
+      }
+    },
+    {
+      "task_id": "postbox-reforge-final",
+      "phase": "in_progress",
+      "phase_num": 4,
+      "description": "Reforge run-1 completed: 22 stages, 66 commits, 0 findings",
+      "files_affected": [],
+      "status": "in_progress",
+      "timestamp": 1795108938.33918,
+      "timestamp_str": "2026-11-19 20:22:18",
+      "agent": "opencode:postbox",
+      "checklists": "passed"
+    },
+    {
+      "task_id": "postbox-reforge-final",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-reforge-final' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795108939.8789687,
+      "timestamp_str": "2026-11-19 20:22:19",
+      "agent": "opencode:postbox",
+      "head": "8667dc102897780688a09275a5800bbb0c12ca38",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
