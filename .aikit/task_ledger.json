@@ -3,27 +3,18 @@
   "active_task": {
     "task_id": "postbox-publish",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795110333.8351183,
     "owner": "opencode:postbox",
     "lease_until": 1795117533.8351183,
     "started_by": "opencode:postbox",
-    "continuations": []
+    "continuations": [],
+    "completed_at": 1795110476.992602,
+    "completed_head": "61199291aaeeedd8a4ceb3a9841d58a679fad003",
+    "completed_tree": "fc072116117b4b1bff28563ce3a30fd5484d926d"
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-1",
-      "phase": "reforge stage 19",
-      "phase_num": 3,
-      "description": "Reforge stage 19: window 57, 3 commit(s), 7 file(s) reviewed (unreviewed), 0 finding(s), 0 repaired, empty \u2014 nothing to commit",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795108449.585381,
-      "timestamp_str": "2026-11-19 20:14:09",
-      "agent": "opencode",
-      "operator_task": "postbox-reforge"
-    },
     {
       "task_id": "reforge:run-1",
       "phase": "reforge stage 19",
@@ -297,6 +288,23 @@
       "timestamp_str": "2026-11-19 20:45:33",
       "agent": "opencode:postbox",
       "checklists": "passed"
+    },
+    {
+      "task_id": "postbox-publish",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-publish' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795110477.0909672,
+      "timestamp_str": "2026-11-19 20:47:57",
+      "agent": "opencode:postbox",
+      "head": "61199291aaeeedd8a4ceb3a9841d58a679fad003",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
