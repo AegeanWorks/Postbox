@@ -3,8 +3,8 @@
   "active_task": {
     "task_id": "postbox-clear",
     "last_phase": "phase 4",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795067240.2110312,
     "owner": "opencode:postbox",
     "started_by": "opencode:postbox",
@@ -14,26 +14,12 @@
         "name": "postbox",
         "path": "projects/postbox"
       }
-    ]
+    ],
+    "completed_at": 1795067272.672533,
+    "completed_head": "cb4c10f40e9fe071ffa19837b779d9be1c9e9678",
+    "completed_tree": "17bbc37cca4745968ab319bec6f100d2fb226dbf"
   },
   "checkpoints": [
-    {
-      "task_id": "postbox-cli",
-      "phase": "phase 3",
-      "phase_num": 3,
-      "description": "[4/5] Done: README usage for preserve-path, time filters, export/import; ADR-008",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795065988.4532685,
-      "timestamp_str": "2026-11-19 08:26:28",
-      "agent": "opencode:postbox",
-      "workspaces": [
-        {
-          "name": "postbox",
-          "path": "projects/postbox"
-        }
-      ]
-    },
     {
       "task_id": "postbox-cli",
       "phase": "phase 4",
@@ -393,6 +379,23 @@
           "path": "projects/postbox"
         }
       ]
+    },
+    {
+      "task_id": "postbox-clear",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-clear' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795067273.0209312,
+      "timestamp_str": "2026-11-19 08:47:53",
+      "agent": "opencode:postbox",
+      "head": "cb4c10f40e9fe071ffa19837b779d9be1c9e9678",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
