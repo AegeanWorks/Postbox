@@ -3,27 +3,18 @@
   "active_task": {
     "task_id": "postbox-smuggling",
     "last_phase": "in_progress",
-    "active_phase": 4,
-    "status": "in_progress",
+    "active_phase": 5,
+    "status": "completed",
     "updated_at": 1795109846.9037883,
     "owner": "opencode:postbox",
     "lease_until": 1795117046.9037883,
     "started_by": "opencode:postbox",
-    "continuations": []
+    "continuations": [],
+    "completed_at": 1795109888.6316543,
+    "completed_head": "9f0699713af6fb3c25285ba8d39744b6a5e36022",
+    "completed_tree": "b47c7502a180fb79467f88caafc3ae4e99d2d18e"
   },
   "checkpoints": [
-    {
-      "task_id": "reforge:run-1",
-      "phase": "reforge stage 17",
-      "phase_num": 3,
-      "description": "Reforge stage 17: stage 17 host review reviewed; run active; coverage 37/37",
-      "files_affected": [],
-      "status": "in_progress",
-      "timestamp": 1795108312.4240549,
-      "timestamp_str": "2026-11-19 20:11:52",
-      "agent": "opencode",
-      "operator_task": "postbox-reforge"
-    },
     {
       "task_id": "reforge:run-1",
       "phase": "reforge stage 18",
@@ -287,6 +278,23 @@
       "timestamp_str": "2026-11-19 20:37:26",
       "agent": "opencode:postbox",
       "checklists": "passed"
+    },
+    {
+      "task_id": "postbox-smuggling",
+      "phase": "completed",
+      "phase_num": 5,
+      "description": "Task 'postbox-smuggling' completed successfully.",
+      "status": "completed",
+      "timestamp": 1795109889.0454984,
+      "timestamp_str": "2026-11-19 20:38:09",
+      "agent": "opencode:postbox",
+      "head": "9f0699713af6fb3c25285ba8d39744b6a5e36022",
+      "delivery": {
+        "roots": [
+          "."
+        ],
+        "forced": false
+      }
     }
   ]
 }
