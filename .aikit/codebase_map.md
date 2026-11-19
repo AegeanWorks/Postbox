@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `18`
-- **Total Class Methods**: `147`
-- **Total Source Lines**: `2080`
+- **Total Class Methods**: `148`
+- **Total Source Lines**: `2099`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -85,7 +85,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `283` lines
+**Size**: `286` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -152,7 +152,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `907` lines
+**Size**: `923` lines
 
 **Classes:**
 - `class ModelTests`
@@ -203,6 +203,7 @@
   - Method `.test_url_reports_the_bound_port()`
   - Method `.test_request_is_captured()`
   - Method `.test_inspect_and_clear_endpoints()`
+  - Method `.test_non_get_requests_to_read_only_paths_are_captured()`
   - Method `.test_inbox_pagination()`
   - Method `.test_inbox_pagination_rejects_bad_values()`
   - Method `.test_non_utf8_inbox_returns_json_500()`

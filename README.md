@@ -104,7 +104,9 @@ in memory.
 | `GET /__health` | readiness and current request count |
 | `POST /__clear` or `DELETE /__clear` | empty the inbox |
 
-HEAD requests are captured but their responses carry headers only, as HTTP requires.
+The read-only paths `/__inbox` and `/__health` are controlled only by GET and HEAD;
+any other method sent there is captured like an ordinary webhook. HEAD requests
+are captured but their responses carry headers only, as HTTP requires.
 Invalid pagination values get `400`; without query parameters the inbox still returns
 the original bare JSON array.
 

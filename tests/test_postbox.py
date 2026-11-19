@@ -387,6 +387,22 @@ class ServerTests(unittest.TestCase):
             self.assertTrue(json.loads(response.read())["cleared"])
         self.assertEqual(self.store.count(), 0)
 
+    def test_non_get_requests_to_read_only_paths_are_captured(self) -> None:
+        with socket.create_connection(("127.0.0.1", self.port), timeout=5) as sock:
+            sock.sendall(
+                b"POST /__inbox HTTP/1.0\r\nHost: x\r\nContent-Length: 4\r\n\r\ndata"
+            )
+            self.assertIn(b"200", sock.recv(4096))
+        with socket.create_connection(("127.0.0.1", self.port), timeout=5) as sock:
+            sock.sendall(
+                b"PUT /__health HTTP/1.0\r\nHost: x\r\nContent-Length: 4\r\n\r\ndata"
+            )
+            self.assertIn(b"200", sock.recv(4096))
+        self.assertEqual(
+            [(r.method, r.path, r.body) for r in self.store.all()],
+            [("POST", "/__inbox", b"data"), ("PUT", "/__health", b"data")],
+        )
+
     def test_inbox_pagination(self) -> None:
         for _ in range(3):
             self._post("/hook", b"x")

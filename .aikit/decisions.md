@@ -158,3 +158,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed replay failures still printed prose under --json, unlike all other command results documented in ADR-020.
 - **Decision**: Print a replay_failed JSON object with an error detail field on replay failure in JSON mode, preserving the human Why and Fix text otherwise.
 - **Consequences**: Agents can parse replay success and failure uniformly; the exit code stays 1.
+
+### ADR-022: Only GET and HEAD own the read-only control paths
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed POST /__inbox and PUT /__health received a control response and were never captured, silently discarding webhooks.
+- **Decision**: Fall through to capture for any non-GET/HEAD request to /__inbox or /__health; clear remains POST/DELETE only.
+- **Consequences**: No request is lost because of its path; the control responses stay unchanged for the documented GET/HEAD callers.

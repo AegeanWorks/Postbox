@@ -190,6 +190,9 @@ class InboxHandler(BaseHTTPRequestHandler):
 
     def _route(self) -> None:
         path, _, query = self.path.partition("?")
+        if path in {"/__inbox", "/__health"} and self.command not in {"GET", "HEAD"}:
+            self._capture()
+            return
         if path == "/__clear":
             if self.command not in {"POST", "DELETE"}:
                 self._send_json({"error": "use POST or DELETE to clear"}, 405)
