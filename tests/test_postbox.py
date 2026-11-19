@@ -94,6 +94,31 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(result["X-Api-Key"], "[REDACTED]")
         self.assertEqual(result["Content-Type"], "application/json")
 
+    def test_oauth_header_names_are_redacted(self) -> None:
+        result = dict(
+            redact_headers(
+                (
+                    ("X-Access-Token", "secret"),
+                    ("X-CSRF-Token", "secret"),
+                    ("Api-Key", "secret"),
+                    ("Authentication", "secret"),
+                )
+            )
+        )
+        for name in ("X-Access-Token", "X-CSRF-Token", "Api-Key", "Authentication"):
+            self.assertEqual(result[name], "[REDACTED]")
+
+    def test_oauth_query_keys_are_redacted(self) -> None:
+        result = dict(
+            urllib.parse.parse_qsl(
+                redact_query("access_token=a&refresh_token=b&auth=c&page=1")
+            )
+        )
+        self.assertEqual(result["access_token"], "[REDACTED]")
+        self.assertEqual(result["refresh_token"], "[REDACTED]")
+        self.assertEqual(result["auth"], "[REDACTED]")
+        self.assertEqual(result["page"], "1")
+
     def test_sensitive_query_keys_are_redacted(self) -> None:
         result = dict(urllib.parse.parse_qsl(redact_query("a=1&token=s3cr3t&b=2")))
         self.assertEqual(result["token"], "[REDACTED]")

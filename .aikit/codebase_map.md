@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `16`
 - **Total Top-Level Functions**: `16`
-- **Total Class Methods**: `131`
-- **Total Source Lines**: `1835`
+- **Total Class Methods**: `133`
+- **Total Source Lines**: `1874`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -62,7 +62,7 @@
 ### [`postbox/models.py`](postbox/models.py)
 > *The captured-request value object.*
 
-**Size**: `154` lines
+**Size**: `168` lines
 
 **Classes:**
 - `class CorruptInboxError` - *A record in the inbox cannot be decoded safely.*
@@ -149,7 +149,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `763` lines
+**Size**: `788` lines
 
 **Classes:**
 - `class ModelTests`
@@ -161,6 +161,8 @@
   - Method `.test_z_suffix_timestamp_is_accepted()`
   - Method `.test_missing_record_key_is_refused()`
   - Method `.test_sensitive_headers_are_redacted()`
+  - Method `.test_oauth_header_names_are_redacted()`
+  - Method `.test_oauth_query_keys_are_redacted()`
   - Method `.test_sensitive_query_keys_are_redacted()`
 - `class StoreTests`
   - Method `.setUp()`

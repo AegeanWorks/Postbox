@@ -109,3 +109,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed a routine client disconnect before reading the response produced a full ConnectionAbortedError traceback from _send_json, even though the capture succeeded.
 - **Decision**: Ignore OS-level OSError when writing the response body; the record is already persisted and no retry is meaningful once the client is gone.
 - **Consequences**: Operator logs stay clean under normal client churn; a genuine store failure is still reported as JSON 500 because it happens before the response write.
+
+### ADR-015: Cover common OAuth credential names in redaction
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed X-Access-Token, Api-Key, access_token and refresh_token were stored verbatim despite redaction being enabled.
+- **Decision**: Add those names (plus X-CSRF-Token, Authentication and auth) to the sensitive header and query sets used at capture and replay.
+- **Consequences**: Common OAuth and API credentials no longer persist in the inbox; the defensive lists are exact case-insensitive matches, so unrelated fields keep their values.

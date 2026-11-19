@@ -18,11 +18,25 @@ SENSITIVE_HEADERS = frozenset(
         "set-cookie",
         "x-api-key",
         "x-auth-token",
+        "x-access-token",
+        "x-csrf-token",
+        "api-key",
+        "authentication",
     }
 )
 
 SENSITIVE_QUERY_KEYS = frozenset(
-    {"token", "api_key", "apikey", "secret", "password", "key"}
+    {
+        "token",
+        "api_key",
+        "apikey",
+        "secret",
+        "password",
+        "key",
+        "access_token",
+        "refresh_token",
+        "auth",
+    }
 )
 
 

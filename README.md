@@ -128,8 +128,10 @@ The server binds to `127.0.0.1` by default and refuses non-loopback hosts unless
 inbox has no authentication.
 
 Captured `Authorization`, `Proxy-Authorization`, `Cookie`, `Set-Cookie`,
-`X-Api-Key` and `X-Auth-Token` headers are stored as `[REDACTED]`, as are query
-values for `token`, `api_key`, `apikey`, `secret`, `password` and `key`. Replay
+`X-Api-Key`, `X-Auth-Token`, `X-Access-Token`, `X-CSRF-Token`, `Api-Key` and
+`Authentication` headers are stored as `[REDACTED]`, as are query values for
+`token`, `access_token`, `refresh_token`, `auth`, `api_key`, `apikey`, `secret`,
+`password` and `key`. Replay
 never sends a redacted header. This keeps credentials out of the JSONL file,
 but bodies are still stored verbatim — do not send secrets in request bodies.
 
