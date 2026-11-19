@@ -124,7 +124,20 @@ class InboxHandler(BaseHTTPRequestHandler):
                 raise _BadChunkedBody("missing chunk delimiter")
         return b"".join(chunks)
 
+    def _bad_framing(self) -> bool:
+        """Reject conflicting framing headers before reading any body (RFC 7230 §3.3.3)."""
+        if self.headers.get("Transfer-Encoding") and self.headers.get("Content-Length"):
+            self._bad_request("both Transfer-Encoding and Content-Length present")
+            return True
+        declared = self.headers.get_all("Content-Length")
+        if declared is not None and len(declared) > 1:
+            self._bad_request("conflicting Content-Length headers")
+            return True
+        return False
+
     def _capture(self) -> None:
+        if self._bad_framing():
+            return
         declared = self.headers.get_all("Content-Length")
         if declared is not None and len(declared) > 1:
             self._bad_request("conflicting Content-Length headers")
@@ -181,6 +194,8 @@ class InboxHandler(BaseHTTPRequestHandler):
 
     def _drain_body(self) -> bool:
         """Consume and validate a request body; return False if a 400 was sent."""
+        if self._bad_framing():
+            return False
         if "chunked" in self.headers.get("Transfer-Encoding", "").lower():
             try:
                 self._read_chunked_body()  # no storage cap: clear only drains
@@ -342,13 +357,16 @@ def serve(
     store: InboxStore,
     host: str = "127.0.0.1",
     max_body: int = DEFAULT_MAX_BODY,
+    quiet: bool = False,
 ) -> None:
-    """Run the inbox until interrupted."""
+    """Run the inbox until interrupted; ``quiet`` keeps stdout free for JSON."""
     server = InboxServer((host, port), store, max_body)
-    print(f"Postbox listening on {server.url()} (inbox: {store.path})")
+    if not quiet:
+        print(f"Postbox listening on {server.url()} (inbox: {store.path})")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nPostbox stopped.")
+        if not quiet:
+            print("\nPostbox stopped.")
     finally:
         server.server_close()

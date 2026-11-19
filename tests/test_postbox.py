@@ -488,6 +488,25 @@ class ServerTests(unittest.TestCase):
             payload = json.loads(response.read())
         self.assertEqual(payload, {"ok": True, "count": 0})
 
+    def test_transfer_encoding_with_content_length_is_rejected(self) -> None:
+        payload = (
+            b"POST /hook HTTP/1.0\r\nHost: x\r\n"
+            b"Transfer-Encoding: chunked\r\nContent-Length: 3\r\n\r\n"
+            b"4\r\nwiki\r\n0\r\n\r\n"
+        )
+        self.assertIn(b"400", self._raw(payload))
+        self.assertEqual(self.store.count(), 0)
+
+    def test_clear_rejects_transfer_encoding_with_content_length(self) -> None:
+        self._post("/hook", b"data")
+        payload = (
+            b"POST /__clear HTTP/1.0\r\nHost: x\r\n"
+            b"Transfer-Encoding: chunked\r\nContent-Length: 3\r\n\r\n"
+            b"4\r\nwiki\r\n0\r\n\r\n"
+        )
+        self.assertIn(b"400", self._raw(payload))
+        self.assertEqual(self.store.count(), 1)
+
     def test_conflicting_content_length_is_rejected(self) -> None:
         response = self._raw(
             b"POST /hook HTTP/1.0\r\nHost: x\r\nContent-Length: 3\r\n"

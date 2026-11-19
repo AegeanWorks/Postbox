@@ -45,6 +45,7 @@ python -m unittest discover -s tests
 - **Agent results**: with `--json`, `clear`/`import`/`delete`/`replay` print `{"cleared": N}`, `{"imported": N, "skipped": M}`, `{"deleted": "id"}` or `{"method": ..., "url": ..., "status": ...}`
 - **Replay failures**: with `--json`, a failed replay prints `{"error": "replay_failed", "detail": ...}`
 - **Timeouts**: `--timeout` must be finite, non-negative and at most 86400 seconds
+- **JSON serve**: with `--json`, serve emits no human startup or stop text on stdout
 - **Time window**: `python -m postbox.cli --file inbox.jsonl list --after 2026-11-19 --before 2026-11-20`
 - **Portable snapshot**: `python -m postbox.cli --file inbox.jsonl export --output snapshot.json`
 - **Restore snapshot**: `python -m postbox.cli --file other.jsonl import snapshot.json`
@@ -126,8 +127,9 @@ remove a corrupt inbox; in that case the reported count is `null`.
 Bodies above
 `--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies
 are decoded with the same cumulative size limit; malformed chunk framing gets
-`400`. Malformed, negative or duplicate `Content-Length` headers also get `400`,
-as does a body
+`400`. A request carrying both `Transfer-Encoding` and `Content-Length` is rejected
+with `400` as an HTTP smuggling guard. Malformed, negative or duplicate
+`Content-Length` headers also get `400`, as does a body
 that is shorter than the declared length; incomplete bodies are never stored.
 Chunk extensions are consumed in full, and a single chunk above 64 MiB is refused.
 A corrupt or non-UTF-8 inbox

@@ -307,7 +307,7 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
                 print("Why: two writers can interleave appends with an atomic trim and lose data.")
                 print("Fix: stop the other server, or use a different --file.")
                 return 1
-            serve(args.port, store, args.host, args.max_body)
+            serve(args.port, store, args.host, args.max_body, args.json)
             return 0
         finally:
             lock.release()

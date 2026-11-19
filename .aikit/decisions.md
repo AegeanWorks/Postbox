@@ -235,3 +235,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: A probe showed long chunk extensions caused a valid webhook to be rejected, and a huge chunk size on clear raised OverflowError and dropped the connection.
 - **Decision**: Read chunk-size and trailer lines until newline with a bound, and reject single chunks above 64 MiB before reading them.
 - **Consequences**: Legitimate chunked bodies with extensions are captured, and malformed or absurd chunk sizes get JSON 400 instead of a traceback.
+
+### ADR-033: Reject conflicting framing and keep JSON serve quiet
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: A probe showed a request with both Transfer-Encoding and Content-Length was captured, and --json serve printed human text to stdout.
+- **Decision**: Reject both-framing requests with 400 in capture and clear, and suppress serve's stdout messages when --json is set.
+- **Consequences**: HTTP smuggling shapes are refused and JSON-mode stdout stays parseable.
