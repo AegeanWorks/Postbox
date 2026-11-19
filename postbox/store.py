@@ -198,6 +198,19 @@ class InboxStore:
             raise AmbiguousIdError(prefix, [request.id for request in matches])
         return matches[0] if matches else None
 
+    def delete(self, prefix: str) -> CapturedRequest | None:
+        """Remove one request by id prefix, refusing an ambiguous match."""
+        with self._lock:
+            records = self._decode(self._read_lines())
+            matches = [request for request in records if request.id.startswith(prefix)]
+            if len(matches) > 1:
+                raise AmbiguousIdError(prefix, [request.id for request in matches])
+            if not matches:
+                return None
+            removed = matches[0]
+            self._atomic_write([request for request in records if request.id != removed.id])
+            return removed
+
     def clear(self) -> None:
         """Empty the inbox with a temp-file + os.replace atomic write."""
         with self._lock:

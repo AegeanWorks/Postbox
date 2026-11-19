@@ -9,8 +9,8 @@
 - **Total Python Modules**: `7`
 - **Total Classes**: `15`
 - **Total Top-Level Functions**: `16`
-- **Total Class Methods**: `103`
-- **Total Source Lines**: `1576`
+- **Total Class Methods**: `117`
+- **Total Source Lines**: `1701`
 
 ## 🧭 Map Coverage
 - **Indexed**: python (`7` module(s))
@@ -30,7 +30,7 @@
 ### [`postbox/cli.py`](postbox/cli.py)
 > *Command-line interface for Postbox.*
 
-**Size**: `334` lines
+**Size**: `353` lines
 
 **Functions:**
 - `def _positive_int(value)`
@@ -82,7 +82,7 @@
 ### [`postbox/server.py`](postbox/server.py)
 > *A small threaded HTTP server that records every incoming request.*
 
-**Size**: `215` lines
+**Size**: `255` lines
 
 **Classes:**
 - `class _BadChunkedBody` - *The chunked stream could not be decoded safely.*
@@ -96,12 +96,17 @@
   - Method `._read_chunked_body()` - *Decode a chunked body with bounded reads and a cumulative size cap.*
   - Method `._capture()`
   - Method `._clear()`
+  - Method `._paged_inbox(query)`
   - Method `._route()`
   - Method `.do_GET()`
   - Method `.do_POST()`
   - Method `.do_PUT()`
   - Method `.do_PATCH()`
   - Method `.do_DELETE()`
+  - Method `.do_HEAD()`
+  - Method `.do_OPTIONS()`
+  - Method `.do_CONNECT()`
+  - Method `.do_TRACE()`
   - Method `.log_message(format, *args)` - *Silence default stderr logging; the inbox is the record.*
 - `class InboxServer` - *Threaded HTTP server bound to an :class:`InboxStore`.*
   - Method `.__init__(address, store, max_body)`
@@ -114,7 +119,7 @@
 ### [`postbox/store.py`](postbox/store.py)
 > *Append-only JSONL persistence with atomic writes and a format version.*
 
-**Size**: `208` lines
+**Size**: `221` lines
 
 **Classes:**
 - `class UnsupportedFormatError` - *The inbox uses a format or version this loader cannot read.*
@@ -131,6 +136,7 @@
   - Method `.extend(requests)` - *Append a batch in one atomic write, honouring retention.*
   - Method `.all()` - *Return every captured request in arrival order.*
   - Method `.find(prefix)` - *Find a request by id prefix, refusing an ambiguous match.*
+  - Method `.delete(prefix)` - *Remove one request by id prefix, refusing an ambiguous match.*
   - Method `.clear()` - *Empty the inbox with a temp-file + os.replace atomic write.*
   - Method `.count()` - *Return the number of captured requests.*
 
@@ -142,7 +148,7 @@
 ### [`tests/test_postbox.py`](tests/test_postbox.py)
 > *Tests for Postbox: models, store, server and CLI.*
 
-**Size**: `604` lines
+**Size**: `657` lines
 
 **Classes:**
 - `class ModelTests`
@@ -162,6 +168,9 @@
   - Method `.test_find_by_prefix()`
   - Method `.test_ambiguous_prefix_is_refused()`
   - Method `.test_retention_keeps_newest_requests()`
+  - Method `.test_delete_removes_only_the_match()`
+  - Method `.test_delete_returns_none_when_missing()`
+  - Method `.test_delete_refuses_ambiguous_prefix()`
   - Method `.test_extend_appends_a_batch()`
   - Method `.test_extend_honours_retention()`
   - Method `.test_clear_empties_without_temp_files()`
@@ -182,6 +191,8 @@
   - Method `._post(path, payload)`
   - Method `.test_request_is_captured()`
   - Method `.test_inspect_and_clear_endpoints()`
+  - Method `.test_inbox_pagination()`
+  - Method `.test_inbox_pagination_rejects_bad_values()`
   - Method `.test_health_endpoint()`
   - Method `.test_malformed_content_length_is_rejected()`
   - Method `.test_negative_content_length_is_rejected()`
@@ -190,6 +201,7 @@
   - Method `.test_malformed_chunk_size_is_rejected()`
   - Method `.test_get_clear_is_a_noop()`
   - Method `.test_corrupt_inbox_returns_json_error()`
+  - Method `.test_head_and_options_are_captured()`
   - Method `.test_secrets_are_redacted_on_capture()`
   - Method `.test_oversized_body_is_rejected()`
 - `class CliTests`
@@ -200,6 +212,8 @@
   - Method `.test_show_missing_returns_error()`
   - Method `.test_clear()`
   - Method `.test_ambiguous_prefix_returns_error()`
+  - Method `.test_delete_command()`
+  - Method `.test_delete_missing_returns_error()`
   - Method `.test_export_import_roundtrip()`
   - Method `.test_export_stdout_is_json()`
   - Method `.test_import_refuses_unknown_version()`

@@ -144,6 +144,22 @@ class StoreTests(unittest.TestCase):
             store.append(make_request(id=f"id{index}"))
         self.assertEqual([r.id for r in store.all()], ["id1", "id2"])
 
+    def test_delete_removes_only_the_match(self) -> None:
+        self.store.append(make_request(id="a"))
+        self.store.append(make_request(id="b"))
+        removed = self.store.delete("a")
+        self.assertEqual(removed.id, "a")
+        self.assertEqual([r.id for r in self.store.all()], ["b"])
+
+    def test_delete_returns_none_when_missing(self) -> None:
+        self.assertIsNone(self.store.delete("zzz"))
+
+    def test_delete_refuses_ambiguous_prefix(self) -> None:
+        self.store.append(make_request(id="abc1"))
+        self.store.append(make_request(id="abc2"))
+        with self.assertRaises(AmbiguousIdError):
+            self.store.delete("abc")
+
     def test_extend_appends_a_batch(self) -> None:
         self.store.extend([make_request(id="a"), make_request(id="b")])
         self.assertEqual([r.id for r in self.store.all()], ["a", "b"])
@@ -292,6 +308,25 @@ class ServerTests(unittest.TestCase):
             self.assertTrue(json.loads(response.read())["cleared"])
         self.assertEqual(self.store.count(), 0)
 
+    def test_inbox_pagination(self) -> None:
+        for _ in range(3):
+            self._post("/hook", b"x")
+        with urllib.request.urlopen(
+            f"http://127.0.0.1:{self.port}/__inbox?limit=2&offset=0", timeout=5
+        ) as response:
+            page = json.loads(response.read())
+        self.assertEqual(page["total"], 3)
+        self.assertEqual(len(page["requests"]), 2)
+        self.assertEqual(page["next_offset"], 2)
+        with urllib.request.urlopen(
+            f"http://127.0.0.1:{self.port}/__inbox", timeout=5
+        ) as response:
+            self.assertIsInstance(json.loads(response.read()), list)
+
+    def test_inbox_pagination_rejects_bad_values(self) -> None:
+        response = self._raw(b"GET /__inbox?limit=-1 HTTP/1.0\r\nHost: x\r\n\r\n")
+        self.assertIn(b"400", response)
+
     def test_health_endpoint(self) -> None:
         with urllib.request.urlopen(
             f"http://127.0.0.1:{self.port}/__health", timeout=5
@@ -361,6 +396,17 @@ class ServerTests(unittest.TestCase):
         self.assertIn(b"500", response)
         self.assertIn(b"inbox error", response.lower())
 
+    def test_head_and_options_are_captured(self) -> None:
+        head = self._raw(b"HEAD /hook HTTP/1.0\r\nHost: x\r\n\r\n")
+        self.assertIn(b"200", head)
+        self.assertTrue(head.endswith(b"\r\n\r\n"))
+        options = self._raw(b"OPTIONS /hook HTTP/1.0\r\nHost: x\r\n\r\n")
+        self.assertIn(b"200", options)
+        self.assertEqual(
+            [(r.method, r.path) for r in self.store.all()],
+            [("HEAD", "/hook"), ("OPTIONS", "/hook")],
+        )
+
     def test_secrets_are_redacted_on_capture(self) -> None:
         response = self._raw(
             b"POST /hook?token=s3cr3t HTTP/1.0\r\nHost: x\r\n"
@@ -424,6 +470,13 @@ class CliTests(unittest.TestCase):
     def test_ambiguous_prefix_returns_error(self) -> None:
         self.store.append(make_request(id="abc2"))
         self.assertEqual(main(["--file", str(self.path), "show", "abc"]), 1)
+
+    def test_delete_command(self) -> None:
+        self.assertEqual(main(["--file", str(self.path), "delete", "abc"]), 0)
+        self.assertNotIn("abc123", [r.id for r in self.store.all()])
+
+    def test_delete_missing_returns_error(self) -> None:
+        self.assertEqual(main(["--file", str(self.path), "delete", "zzz"]), 1)
 
     def test_export_import_roundtrip(self) -> None:
         export_path = Path(self.path).parent / "export.json"

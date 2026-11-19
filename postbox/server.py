@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import urllib.parse
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -46,7 +47,8 @@ class InboxHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(body)
+        if self.command != "HEAD":
+            self.wfile.write(body)
 
     def _inbox_error(self, exc: Exception) -> None:
         """Report a store failure as JSON instead of dropping the connection."""
@@ -142,8 +144,31 @@ class InboxHandler(BaseHTTPRequestHandler):
             return
         self._send_json({"ok": True, "cleared": True})
 
+    def _paged_inbox(self, query: str) -> None:
+        params = urllib.parse.parse_qs(query)
+        try:
+            limit = int(params.get("limit", ["100"])[0])
+            offset = int(params.get("offset", ["0"])[0])
+            if limit < 1 or offset < 0:
+                raise ValueError("out of range")
+        except ValueError:
+            self._bad_request("limit must be positive and offset non-negative")
+            return
+        requests = self.store.all()
+        page = requests[offset : offset + limit]
+        following = offset + len(page)
+        self._send_json(
+            {
+                "total": len(requests),
+                "offset": offset,
+                "limit": limit,
+                "next_offset": following if following < len(requests) else None,
+                "requests": [request.to_dict() for request in page],
+            }
+        )
+
     def _route(self) -> None:
-        path = self.path.split("?")[0]
+        path, _, query = self.path.partition("?")
         if path == "/__clear":
             if self.command == "GET":
                 self._send_json({"error": "use POST or DELETE to clear"}, 405)
@@ -151,7 +176,10 @@ class InboxHandler(BaseHTTPRequestHandler):
                 self._clear()
         elif path == "/__inbox":
             try:
-                self._send_json([item.to_dict() for item in self.store.all()])
+                if "limit" in query or "offset" in query:
+                    self._paged_inbox(query)
+                else:
+                    self._send_json([item.to_dict() for item in self.store.all()])
             except _INBOX_ERRORS as exc:
                 self._inbox_error(exc)
         elif path == "/__health":
@@ -169,12 +197,24 @@ class InboxHandler(BaseHTTPRequestHandler):
         self._route()
 
     def do_PUT(self) -> None:
-        self._capture()
+        self._route()
 
     def do_PATCH(self) -> None:
-        self._capture()
+        self._route()
 
     def do_DELETE(self) -> None:
+        self._route()
+
+    def do_HEAD(self) -> None:
+        self._route()
+
+    def do_OPTIONS(self) -> None:
+        self._route()
+
+    def do_CONNECT(self) -> None:
+        self._route()
+
+    def do_TRACE(self) -> None:
         self._route()
 
     def log_message(self, format: str, *args: object) -> None:

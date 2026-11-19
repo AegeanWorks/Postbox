@@ -67,3 +67,10 @@ contract, a dependency, a data format or the architecture; IDs are consecutive a
 - **Context**: The inbox was portable only by copying raw JSONL, and replay discarded the captured path and query, so it could not reproduce the original endpoint.
 - **Decision**: Export a versioned postbox-export JSON envelope with refuse-on-unknown import, and add an opt-in --preserve-path replay flag that uses the captured route while dropping redacted query values.
 - **Consequences**: Snapshots can evolve safely and replays can target another host without losing the original route; default replay behaviour is unchanged.
+
+### ADR-009: Capture every method and paginate the inbox endpoint
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**: HEAD and OPTIONS requests returned 501 and were not captured, there was no targeted delete, and the inbox endpoint always returned the whole file.
+- **Decision**: Route all common HTTP methods through the capture path with bodyless HEAD responses, add an ambiguity-safe delete command, and support limit/offset pagination while keeping the bare-array default.
+- **Consequences**: No webhook method is silently missed and large inboxes can be paged; existing callers of the inbox endpoint keep the same default response shape.

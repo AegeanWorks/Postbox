@@ -36,6 +36,7 @@ python -m unittest discover -s tests
 - **List captures**: `python -m postbox.cli --file inbox.jsonl list`
 - **Inspect one**: `python -m postbox.cli --file inbox.jsonl show <id>`
 - **Replay one**: `python -m postbox.cli --file inbox.jsonl replay <id> --url http://127.0.0.1:3000/hook`
+- **Delete one**: `python -m postbox.cli --file inbox.jsonl delete <id>`
 - **Clear**: `python -m postbox.cli --file inbox.jsonl clear`
 - **Agent-friendly output**: `python -m postbox.cli --file inbox.jsonl --json list --method POST --path /hook`
 - **Time window**: `python -m postbox.cli --file inbox.jsonl list --after 2026-11-19 --before 2026-11-20`
@@ -93,10 +94,15 @@ in memory.
 
 | Endpoint | Purpose |
 | --- | --- |
-| any path, any method | capture the request and return `{"ok": true, "id": ...}` |
+| any path, any method (including HEAD and OPTIONS) | capture the request and return `{"ok": true, "id": ...}` |
 | `GET /__inbox` | all captured requests as JSON |
+| `GET /__inbox?limit=N&offset=N` | one page plus `total`, `offset`, `limit`, `next_offset` |
 | `GET /__health` | readiness and current request count |
 | `POST /__clear` or `DELETE /__clear` | empty the inbox |
+
+HEAD requests are captured but their responses carry headers only, as HTTP requires.
+Invalid pagination values get `400`; without query parameters the inbox still returns
+the original bare JSON array.
 
 `GET /__clear` returns `405` so a prefetch cannot destroy captures. Bodies above
 `--max-body` bytes (default 1 MiB) get a `413` and are not stored. Chunked bodies

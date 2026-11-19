@@ -124,6 +124,9 @@ def _build_parser() -> argparse.ArgumentParser:
     show_parser = sub.add_parser("show", help="show one captured request")
     show_parser.add_argument("id", help="full id or unique prefix")
 
+    delete_parser = sub.add_parser("delete", help="remove one captured request")
+    delete_parser.add_argument("id", help="full id or unique prefix")
+
     sub.add_parser("clear", help="empty the inbox")
 
     export_parser = sub.add_parser("export", help="write a portable JSON snapshot")
@@ -256,6 +259,22 @@ def _dispatch(args: argparse.Namespace, store: InboxStore) -> int:
             print(json.dumps(request.to_dict(), indent=2, ensure_ascii=False))
             print("\n--- body ---")
             print(request.text())
+        return 0
+
+    if args.command == "delete":
+        try:
+            removed = store.delete(args.id)
+        except AmbiguousIdError as exc:
+            print(f"Ambiguous id '{args.id}': {exc}")
+            print("Why: a short prefix can match several captured requests.")
+            print("Fix: use one of the listed full ids, or a longer unique prefix.")
+            return 1
+        if removed is None:
+            print(f"No captured request starts with '{args.id}'.")
+            print("Why: there is nothing in this inbox to delete.")
+            print("Fix: run 'postbox list' to see available ids.")
+            return 1
+        print(f"Deleted {removed.id}.")
         return 0
 
     if args.command == "clear":
